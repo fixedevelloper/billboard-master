@@ -6,7 +6,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
 @Component
-public class VerificationMailSender {
+public class
+VerificationMailSender {
 
     private final JavaMailSender mailSender;
     private final String from;

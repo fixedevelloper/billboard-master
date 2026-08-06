@@ -101,11 +101,6 @@
             <version>8.5.17</version>
         </dependency>
         <dependency>
-            <groupId>me.paulschwarz</groupId>
-            <artifactId>spring-dotenv</artifactId>
-            <version>4.0.0</version>
-        </dependency>
-        <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
             <version>0.12.6</version>
@@ -223,6 +218,7 @@
                         <include>**/*IT.java</include>
                     </includes>
                 </configuration>
+
             </plugin>
         </plugins>
     </build>

@@ -1,5 +1,6 @@
 package com.cscreativ.billboard.user.application;
 
+import com.cscreativ.billboard.user.domain.Role;
 import com.cscreativ.billboard.user.domain.User;
 import com.cscreativ.billboard.user.domain.exception.EmailAlreadyExistsException;
 import com.cscreativ.billboard.user.domain.repository.RoleRepository;
@@ -20,6 +21,8 @@ import java.util.Set;
 
 @Service
 public class RegistrationService {
+
+    private static final String DEFAULT_ROLE_NAME = "USER";
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -45,7 +48,11 @@ public class RegistrationService {
         FullName fullName = new FullName(firstName, lastName);
         PhoneNumber phoneNumber = phoneStr != null ? new PhoneNumber(phoneStr) : null;
 
-        User user = User.create(email, password, fullName, phoneNumber, Set.of());
+        Role defaultRole = roleRepository.findByName(DEFAULT_ROLE_NAME)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Rôle par défaut '" + DEFAULT_ROLE_NAME + "' introuvable en base"));
+
+        User user = User.create(email, password, fullName, phoneNumber, Set.of(defaultRole));
         User savedUser = userRepository.save(user);
 
         eventPublisher.publishEvent(new UserRegisteredEvent(

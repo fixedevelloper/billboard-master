@@ -1,0 +1,226 @@
+{
+  "metadata": {
+    "title": "Billboard",
+    "description": "A platform to manage and book advertising billboards."
+  },
+  "NotFoundPage": {
+    "error404": "Error 404",
+    "title": "Page not found",
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "backToHotels": "Back to home"
+  },
+  "common": {
+    "close": "Close",
+    "loading": "Loading…",
+    "email": "Email",
+    "password": "Password"
+  },
+  "nav": {
+    "home": "Home",
+    "login": "Log in",
+    "register": "Sign up",
+    "profile": "My profile",
+    "logout": "Log out",
+    "billboards": "Billboards",
+    "bookings": "My bookings",
+    "campaigns": "My campaigns",
+    "mediaBuyerPayments": "Payments to process",
+    "myBillboards": "My billboards (owner)"
+  },
+  "home": {
+    "heroTitle": "Rent and manage advertising billboards with ease",
+    "heroSubtitle": "Billboard connects advertisers with billboard owners.",
+    "ctaLogin": "Log in",
+    "ctaRegister": "Create an account"
+  },
+  "auth": {
+    "register": {
+      "title": "Create an account",
+      "subtitle": "Sign up to access the platform.",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "phone": "Phone (optional)",
+      "submit": "Sign up",
+      "submitting": "Signing up…",
+      "success": "Account created successfully. You can now log in.",
+      "haveAccount": "Already have an account?",
+      "goToLogin": "Log in"
+    },
+    "login": {
+      "title": "Log in",
+      "subtitle": "Log in to your account.",
+      "submit": "Log in",
+      "submitting": "Logging in…",
+      "noAccount": "Don't have an account yet?",
+      "createAccount": "Sign up"
+    },
+    "profile": {
+      "title": "My profile",
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Phone",
+      "status": "Status",
+      "notProvided": "Not provided",
+      "logout": "Log out",
+      "loadError": "Unable to load the profile.",
+      "becomeAdvertiser": "Become an advertiser",
+      "advertiserProfile": "Advertiser profile",
+      "becomeOwner": "Become an owner",
+      "ownerProfile": "Owner profile"
+    }
+  },
+  "owner": {
+    "become": {
+      "title": "Become an owner",
+      "subtitle": "Provide your company details to be able to list billboards.",
+      "companyName": "Company name",
+      "registrationNumber": "Registration number (optional)",
+      "contactEmail": "Contact email",
+      "phoneNumber": "Phone (optional)",
+      "revenueShareRate": "Revenue share rate to the platform (0 to 1)",
+      "submit": "Create my owner profile",
+      "submitting": "Creating…",
+      "success": "Owner profile created.",
+      "continue": "Manage my billboards"
+    },
+    "billboards": {
+      "title": "My billboards",
+      "empty": "No billboards yet.",
+      "status": "Status",
+      "createTitle": "Add a billboard",
+      "billboardTitle": "Title",
+      "description": "Description",
+      "type": "Type",
+      "address": "Address",
+      "city": "City",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "width": "Width (m)",
+      "height": "Height (m)",
+      "dailyRate": "Daily rate",
+      "currency": "Currency",
+      "submit": "Add billboard",
+      "submitting": "Adding…",
+      "success": "Billboard added."
+    }
+  },
+  "advertiser": {
+    "become": {
+      "title": "Become an advertiser",
+      "subtitle": "Provide your company details to be able to book billboards.",
+      "companyName": "Company name",
+      "taxNumber": "Tax number",
+      "contactEmail": "Contact email",
+      "contactPhone": "Contact phone",
+      "submit": "Create my advertiser profile",
+      "submitting": "Creating…",
+      "success": "Advertiser profile created.",
+      "continue": "Browse billboards"
+    }
+  },
+  "billboards": {
+    "search": {
+      "title": "Advertising billboards",
+      "cityLabel": "City",
+      "cityPlaceholder": "E.g. Abidjan",
+      "submit": "Search",
+      "noResults": "No billboard found for this city.",
+      "initial": "Search a city to see available billboards.",
+      "dailyRate": "per day",
+      "viewDetails": "View details"
+    },
+    "detail": {
+      "back": "Back to billboards",
+      "type": "Type",
+      "city": "City",
+      "address": "Address",
+      "dailyRate": "Daily rate",
+      "status": "Status",
+      "bookCta": "Book this billboard",
+      "needAdvertiser": "You need an advertiser profile before booking."
+    },
+    "booking": {
+      "title": "Book this billboard",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "submit": "Confirm request",
+      "submitting": "Booking…",
+      "success": "Booking created successfully.",
+      "viewBooking": "View my bookings"
+    }
+  },
+  "bookings": {
+    "title": "My bookings",
+    "empty": "No bookings yet.",
+    "status": "Status",
+    "dates": "Dates",
+    "total": "Total",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "createCampaign": "Create a campaign"
+  },
+  "campaigns": {
+    "list": {
+      "title": "My campaigns",
+      "empty": "No campaigns yet.",
+      "status": "Status"
+    },
+    "create": {
+      "title": "New campaign",
+      "name": "Campaign name",
+      "description": "Description",
+      "upload": "Campaign creative",
+      "uploading": "Uploading file…",
+      "submit": "Create campaign",
+      "submitting": "Creating…",
+      "success": "Campaign created."
+    },
+    "detail": {
+      "title": "Campaign",
+      "status": "Status",
+      "submitForApproval": "Submit for approval",
+      "rejectionReason": "Rejection reason",
+      "creatives": "Creative proofs",
+      "noCreatives": "No creative proof submitted yet.",
+      "uploadCreative": "Submit a new version",
+      "version": "Version",
+      "requestContract": "Generate contract",
+      "goToPayment": "Go to payment"
+    }
+  },
+  "contracts": {
+    "title": "Contract",
+    "status": "Status",
+    "terms": "Terms",
+    "signAsAdvertiser": "Sign as advertiser",
+    "signerName": "Signer name",
+    "submit": "Sign",
+    "submitting": "Signing…",
+    "signed": "Contract signed.",
+    "alreadySigned": "You already signed this contract.",
+    "waitingOwner": "Waiting for the owner's signature.",
+    "publish": "Publish for signature"
+  },
+  "payments": {
+    "title": "Payment",
+    "amount": "Amount",
+    "method": "Payment method",
+    "payMyself": "I'll pay myself",
+    "delegate": "Delegate to a media buyer",
+    "searchMediaBuyer": "Search a media buyer (name or email)",
+    "noMediaBuyer": "No media buyer found.",
+    "initiate": "Initiate payment",
+    "initiating": "Initiating…",
+    "status": "Status",
+    "gatewayReference": "Transaction reference",
+    "complete": "Mark as paid",
+    "completing": "Confirming…",
+    "delegatedTo": "Delegated to"
+  },
+  "mediaBuyerPayments": {
+    "title": "Payments to process",
+    "notMediaBuyer": "You don't have a media buyer profile on the platform.",
+    "empty": "No payments to process.",
+    "complete": "Complete"
+  }
+}

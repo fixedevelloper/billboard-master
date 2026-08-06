@@ -55,8 +55,16 @@ public class UserPersistenceAdapter implements UserRepository {
         entity.setLastName(domain.getFullName().getLastName());
         entity.setPhoneNumber(domain.getPhoneNumber() != null ? domain.getPhoneNumber().getValue() : null);
         entity.setStatus(domain.getStatus());
+        entity.setRoles(domain.getRoles() != null ? domain.getRoles().stream().map(this::toRoleEntity).collect(Collectors.toSet()) : Set.of());
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setUpdatedAt(domain.getUpdatedAt());
+        return entity;
+    }
+
+    private RoleEntity toRoleEntity(Role domain) {
+        RoleEntity entity = new RoleEntity();
+        entity.setId(domain.getId());
+        entity.setName(domain.getName());
         return entity;
     }
 
