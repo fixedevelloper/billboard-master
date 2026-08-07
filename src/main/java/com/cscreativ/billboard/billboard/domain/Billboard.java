@@ -54,6 +54,17 @@ public class Billboard {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void updateDetails(String title, String description, BillboardType type,
+                               Location location, Dimensions dimensions, Pricing pricing) {
+        this.title = title;
+        this.description = description;
+        this.type = type;
+        this.location = location;
+        this.dimensions = dimensions;
+        this.pricing = pricing;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public UUID getId() { return id; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }

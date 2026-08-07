@@ -6,12 +6,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
 public interface BookingJpaRepository extends JpaRepository<BookingEntity, UUID> {
     List<BookingEntity> findByBillboardId(UUID billboardId);
     List<BookingEntity> findByAdvertiserId(UUID advertiserId);
+    List<BookingEntity> findByStatusIn(Collection<BookingStatus> statuses);
 
     @Query("SELECT COUNT(b) > 0 FROM BookingEntity b WHERE b.billboardId = :billboardId " +
            "AND b.status IN (:activeStatuses) " +

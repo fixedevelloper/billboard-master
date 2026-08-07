@@ -8,5 +8,6 @@ import java.util.UUID;
 
 public interface MediaBuyerFacade {
     Optional<MediaBuyer> findBuyerById(UUID buyerId);
+    Optional<UUID> findBuyerIdByUserId(UUID userId);
     boolean hasSufficientCredit(UUID buyerId, BigDecimal requiredAmount);
 }

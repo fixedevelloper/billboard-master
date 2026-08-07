@@ -59,6 +59,14 @@ public class Booking {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void expire() {
+        if (this.status != BookingStatus.PENDING && this.status != BookingStatus.CONFIRMED) {
+            throw new IllegalStateException("Seule une réservation en attente ou confirmée peut expirer");
+        }
+        this.status = BookingStatus.EXPIRED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public UUID getId() { return id; }
     public UUID getBillboardId() { return billboardId; }
     public UUID getAdvertiserId() { return advertiserId; }

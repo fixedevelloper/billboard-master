@@ -12,4 +12,7 @@ public interface BillboardRepository {
     Optional<Billboard> findById(UUID id);
     List<Billboard> findAllByCity(String city);
     List<Billboard> findAllByStatus(BillboardStatus status);
+    List<Billboard> findAllByOwnerId(UUID ownerId);
+    List<Billboard> findAll();
+    void deleteById(UUID id);
 }

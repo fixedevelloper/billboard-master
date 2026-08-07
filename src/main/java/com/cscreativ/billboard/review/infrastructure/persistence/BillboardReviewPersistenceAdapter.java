@@ -43,6 +43,11 @@ public class BillboardReviewPersistenceAdapter implements BillboardReviewReposit
         return jpaRepository.findByAuthorId(authorId).stream().map(this::toDomain).collect(Collectors.toList());
     }
 
+    @Override
+    public List<BillboardReview> findAll() {
+        return jpaRepository.findAll().stream().map(this::toDomain).collect(Collectors.toList());
+    }
+
     private BillboardReviewEntity toEntity(BillboardReview domain) {
         BillboardReviewEntity entity = new BillboardReviewEntity();
         entity.setId(domain.getId());

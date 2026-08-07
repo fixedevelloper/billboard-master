@@ -24,6 +24,11 @@ public class BookingController {
         this.bookingMapper = bookingMapper;
     }
 
+    @GetMapping("/unpaid-expiration-days")
+    public ResponseEntity<Integer> getUnpaidExpirationDays() {
+        return ResponseEntity.ok(bookingService.getUnpaidExpirationDays());
+    }
+
     @PostMapping
     public ResponseEntity<BookingResponse> createBooking(@RequestBody CreateBookingRequest request) {
         Booking booking = bookingService.createBooking(
@@ -58,6 +63,18 @@ public class BookingController {
     @GetMapping("/advertiser/{advertiserId}")
     public ResponseEntity<List<BookingResponse>> getBookingsByAdvertiser(@PathVariable UUID advertiserId) {
         List<Booking> bookings = bookingService.getBookingsByAdvertiser(advertiserId);
+        return ResponseEntity.ok(bookings.stream().map(bookingMapper::toResponse).collect(Collectors.toList()));
+    }
+
+    @GetMapping("/billboard/{billboardId}")
+    public ResponseEntity<List<BookingResponse>> getBookingsByBillboard(@PathVariable UUID billboardId) {
+        List<Booking> bookings = bookingService.getBookingsByBillboard(billboardId);
+        return ResponseEntity.ok(bookings.stream().map(bookingMapper::toResponse).collect(Collectors.toList()));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<BookingResponse>> getAllBookings() {
+        List<Booking> bookings = bookingService.getAllBookings();
         return ResponseEntity.ok(bookings.stream().map(bookingMapper::toResponse).collect(Collectors.toList()));
     }
 }

@@ -10,6 +10,7 @@ import com.cscreativ.billboard.user.domain.valueobject.Password;
 import com.cscreativ.billboard.user.domain.valueobject.PhoneNumber;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -44,6 +45,11 @@ public class UserPersistenceAdapter implements UserRepository {
     @Override
     public boolean existsByEmail(Email email) {
         return userJpaRepository.existsByEmail(email.getValue());
+    }
+
+    @Override
+    public List<User> findAll() {
+        return userJpaRepository.findAll().stream().map(this::toDomain).collect(Collectors.toList());
     }
 
     private UserEntity toEntity(User domain) {

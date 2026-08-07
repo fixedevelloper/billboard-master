@@ -65,4 +65,10 @@ public class ReviewController {
         double average = reviewService.calculateAverageRating(targetId);
         return ResponseEntity.ok(average);
     }
+
+    @GetMapping
+    public ResponseEntity<List<BillboardReviewResponse>> getAllReviews() {
+        List<BillboardReview> reviews = reviewService.getAllReviews();
+        return ResponseEntity.ok(reviews.stream().map(reviewMapper::toResponse).collect(Collectors.toList()));
+    }
 }

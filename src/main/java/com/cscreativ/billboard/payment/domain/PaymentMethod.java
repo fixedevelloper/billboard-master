@@ -4,5 +4,6 @@ public enum PaymentMethod {
     CREDIT_CARD,
     MOBILE_MONEY,
     BANK_TRANSFER,
-    CREDIT_ACCOUNT
+    CREDIT_ACCOUNT,
+    FLUTTERWAVE
 }

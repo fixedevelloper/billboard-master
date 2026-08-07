@@ -6,6 +6,7 @@ import com.cscreativ.billboard.booking.domain.repository.BookingRepository;
 import com.cscreativ.billboard.booking.domain.valueobject.DateRange;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,9 +44,19 @@ public class BookingPersistenceAdapter implements BookingRepository {
     }
 
     @Override
+    public List<Booking> findByStatusIn(Collection<BookingStatus> statuses) {
+        return jpaRepository.findByStatusIn(statuses).stream().map(this::toDomain).collect(Collectors.toList());
+    }
+
+    @Override
     public boolean existsOverlappingBooking(UUID billboardId, DateRange period) {
         List<BookingStatus> activeStatuses = List.of(BookingStatus.PENDING, BookingStatus.CONFIRMED);
         return jpaRepository.existsOverlapping(billboardId, period.getStartDate(), period.getEndDate(), activeStatuses);
+    }
+
+    @Override
+    public List<Booking> findAll() {
+        return jpaRepository.findAll().stream().map(this::toDomain).collect(Collectors.toList());
     }
 
     private BookingEntity toEntity(Booking domain) {

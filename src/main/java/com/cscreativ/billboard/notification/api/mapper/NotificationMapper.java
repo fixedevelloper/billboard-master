@@ -17,6 +17,7 @@ public class NotificationMapper {
                 log.getContent(),
                 log.getStatus().name(),
                 log.getErrorMessage(),
+                log.isRead(),
                 log.getSentAt(),
                 log.getCreatedAt()
         );

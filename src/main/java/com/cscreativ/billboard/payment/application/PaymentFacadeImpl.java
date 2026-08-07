@@ -29,4 +29,10 @@ public class PaymentFacadeImpl implements PaymentFacade {
                 .map(t -> t.getStatus() == PaymentStatus.SUCCESSFUL)
                 .orElse(false);
     }
+
+    @Override
+    public boolean hasCompletedPaymentForReference(UUID referenceId) {
+        return transactionRepository.findByReferenceId(referenceId).stream()
+                .anyMatch(t -> t.getStatus() == PaymentStatus.SUCCESSFUL);
+    }
 }

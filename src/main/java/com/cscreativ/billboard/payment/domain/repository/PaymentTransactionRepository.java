@@ -11,4 +11,5 @@ public interface PaymentTransactionRepository {
     Optional<PaymentTransaction> findById(UUID id);
     List<PaymentTransaction> findByPayerId(UUID payerId);
     List<PaymentTransaction> findByReferenceId(UUID referenceId);
+    List<PaymentTransaction> findAll();
 }

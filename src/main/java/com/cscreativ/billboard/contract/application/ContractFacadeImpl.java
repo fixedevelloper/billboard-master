@@ -29,4 +29,11 @@ public class ContractFacadeImpl implements ContractFacade {
                 .map(c -> c.getStatus() == ContractStatus.SIGNED)
                 .orElse(false);
     }
+
+    @Override
+    public boolean isSignedForBooking(UUID bookingId) {
+        return contractRepository.findByBookingId(bookingId)
+                .map(c -> c.getStatus() == ContractStatus.SIGNED)
+                .orElse(false);
+    }
 }

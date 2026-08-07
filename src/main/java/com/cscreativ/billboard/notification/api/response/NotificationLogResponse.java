@@ -12,6 +12,7 @@ public record NotificationLogResponse(
         String content,
         String status,
         String errorMessage,
+        boolean read,
         LocalDateTime sentAt,
         LocalDateTime createdAt
 ) {}

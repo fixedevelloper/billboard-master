@@ -24,6 +24,11 @@ public class OwnerFacadeImpl implements OwnerFacade {
     }
 
     @Override
+    public Optional<UUID> findOwnerIdByUserId(UUID userId) {
+        return ownerRepository.findByUserId(userId).map(BillboardOwner::getId);
+    }
+
+    @Override
     public boolean isOwnerActive(UUID ownerId) {
         return ownerRepository.findById(ownerId)
                 .map(owner -> owner.getStatus() == OwnerStatus.ACTIVE)

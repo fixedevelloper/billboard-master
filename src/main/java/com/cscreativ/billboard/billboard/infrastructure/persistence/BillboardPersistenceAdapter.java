@@ -44,6 +44,21 @@ public class BillboardPersistenceAdapter implements BillboardRepository {
         return jpaRepository.findByStatus(status).stream().map(this::toDomain).collect(Collectors.toList());
     }
 
+    @Override
+    public List<Billboard> findAllByOwnerId(UUID ownerId) {
+        return jpaRepository.findByOwnerId(ownerId).stream().map(this::toDomain).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Billboard> findAll() {
+        return jpaRepository.findAll().stream().map(this::toDomain).collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        jpaRepository.deleteById(id);
+    }
+
     private BillboardEntity toEntity(Billboard domain) {
         BillboardEntity entity = new BillboardEntity();
         entity.setId(domain.getId());

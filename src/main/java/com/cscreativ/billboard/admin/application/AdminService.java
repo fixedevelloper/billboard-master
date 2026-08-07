@@ -47,4 +47,8 @@ public class AdminService {
     public List<AuditLog> getAuditLogsByAdmin(UUID adminId) {
         return adminRepository.findAuditLogsByAdmin(adminId);
     }
+
+    public List<AuditLog> getAllAuditLogs() {
+        return adminRepository.findAllAuditLogs();
+    }
 }

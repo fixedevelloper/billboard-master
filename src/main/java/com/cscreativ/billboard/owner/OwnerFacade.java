@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public interface OwnerFacade {
     Optional<BillboardOwner> findOwnerById(UUID ownerId);
+    Optional<UUID> findOwnerIdByUserId(UUID userId);
     boolean isOwnerActive(UUID ownerId);
 }

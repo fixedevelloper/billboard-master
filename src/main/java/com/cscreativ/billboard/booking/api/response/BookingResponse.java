@@ -2,6 +2,7 @@ package com.cscreativ.billboard.booking.api.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record BookingResponse(
@@ -12,5 +13,6 @@ public record BookingResponse(
         LocalDate endDate,
         BigDecimal totalPrice,
         String currency,
-        String status
+        String status,
+        LocalDateTime createdAt
 ) {}

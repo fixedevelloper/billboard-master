@@ -16,7 +16,8 @@ public class BookingMapper {
                 booking.getPeriod().getEndDate(),
                 booking.getTotalPrice(),
                 booking.getCurrency(),
-                booking.getStatus().name()
+                booking.getStatus().name(),
+                booking.getCreatedAt()
         );
     }
 }

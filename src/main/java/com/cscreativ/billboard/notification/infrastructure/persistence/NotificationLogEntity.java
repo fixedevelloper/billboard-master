@@ -32,6 +32,10 @@ public class NotificationLogEntity {
     private NotificationStatus status;
 
     private String errorMessage;
+
+    @Column(nullable = false)
+    private boolean isRead;
+
     private LocalDateTime sentAt;
     private LocalDateTime createdAt;
 
@@ -51,6 +55,8 @@ public class NotificationLogEntity {
     public void setStatus(NotificationStatus status) { this.status = status; }
     public String getErrorMessage() { return errorMessage; }
     public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
+    public boolean isRead() { return isRead; }
+    public void setRead(boolean read) { isRead = read; }
     public LocalDateTime getSentAt() { return sentAt; }
     public void setSentAt(LocalDateTime sentAt) { this.sentAt = sentAt; }
     public LocalDateTime getCreatedAt() { return createdAt; }

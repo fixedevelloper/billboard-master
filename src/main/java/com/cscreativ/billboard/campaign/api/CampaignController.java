@@ -68,4 +68,16 @@ public class CampaignController {
         List<Campaign> campaigns = campaignService.getCampaignsByAdvertiser(advertiserId);
         return ResponseEntity.ok(campaigns.stream().map(campaignMapper::toResponse).collect(Collectors.toList()));
     }
+
+    @GetMapping("/booking/{bookingId}")
+    public ResponseEntity<List<CampaignResponse>> getCampaignsByBooking(@PathVariable UUID bookingId) {
+        List<Campaign> campaigns = campaignService.getCampaignsByBooking(bookingId);
+        return ResponseEntity.ok(campaigns.stream().map(campaignMapper::toResponse).collect(Collectors.toList()));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CampaignResponse>> getAllCampaigns() {
+        List<Campaign> campaigns = campaignService.getAllCampaigns();
+        return ResponseEntity.ok(campaigns.stream().map(campaignMapper::toResponse).collect(Collectors.toList()));
+    }
 }

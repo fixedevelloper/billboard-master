@@ -9,5 +9,5 @@ public record CreateCampaignRequest(
         String description,
         String mediaUrl,
         String fileType,
-        long fileSize
+        Long fileSize
 ) {}

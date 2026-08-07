@@ -22,6 +22,7 @@ public class CampaignEntity {
 
     private String description;
 
+    @Column(length = 2000)
     private String mediaUrl;
     private String mediaFileType;
     private long mediaFileSizeInBytes;

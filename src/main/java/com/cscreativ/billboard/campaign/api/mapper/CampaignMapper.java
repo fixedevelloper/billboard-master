@@ -8,14 +8,15 @@ import org.springframework.stereotype.Component;
 public class CampaignMapper {
 
     public CampaignResponse toResponse(Campaign campaign) {
+        var mediaAsset = campaign.getMediaAsset();
         return new CampaignResponse(
                 campaign.getId(),
                 campaign.getBookingId(),
                 campaign.getAdvertiserId(),
                 campaign.getName(),
                 campaign.getDescription(),
-                campaign.getMediaAsset().getUrl(),
-                campaign.getMediaAsset().getFileType(),
+                mediaAsset == null ? null : mediaAsset.getUrl(),
+                mediaAsset == null ? null : mediaAsset.getFileType(),
                 campaign.getStatus().name(),
                 campaign.getRejectionReason()
         );

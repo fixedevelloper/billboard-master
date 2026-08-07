@@ -8,4 +8,5 @@ import java.util.UUID;
 public interface BillboardJpaRepository extends JpaRepository<BillboardEntity, UUID> {
     List<BillboardEntity> findByCity(String city);
     List<BillboardEntity> findByStatus(BillboardStatus status);
+    List<BillboardEntity> findByOwnerId(UUID ownerId);
 }

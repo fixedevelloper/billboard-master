@@ -8,4 +8,5 @@ import java.util.UUID;
 public interface ContractFacade {
     Optional<Contract> findContractById(UUID contractId);
     boolean isSignedByAllParties(UUID contractId);
+    boolean isSignedForBooking(UUID bookingId);
 }

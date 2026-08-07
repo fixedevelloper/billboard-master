@@ -8,6 +8,7 @@ import com.cscreativ.billboard.booking.domain.valueobject.DateRange;
 import com.cscreativ.billboard.booking.events.BookingCancelledEvent;
 import com.cscreativ.billboard.booking.events.BookingConfirmedEvent;
 import com.cscreativ.billboard.booking.events.BookingCreatedEvent;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +24,13 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final int unpaidExpirationDays;
 
-    public BookingService(BookingRepository bookingRepository, ApplicationEventPublisher eventPublisher) {
+    public BookingService(BookingRepository bookingRepository, ApplicationEventPublisher eventPublisher,
+                           @Value("${booking.unpaid-expiration-days}") int unpaidExpirationDays) {
         this.bookingRepository = bookingRepository;
         this.eventPublisher = eventPublisher;
+        this.unpaidExpirationDays = unpaidExpirationDays;
     }
 
     @Transactional
@@ -73,5 +77,17 @@ public class BookingService {
 
     public List<Booking> getBookingsByAdvertiser(UUID advertiserId) {
         return bookingRepository.findByAdvertiserId(advertiserId);
+    }
+
+    public List<Booking> getBookingsByBillboard(UUID billboardId) {
+        return bookingRepository.findByBillboardId(billboardId);
+    }
+
+    public List<Booking> getAllBookings() {
+        return bookingRepository.findAll();
+    }
+
+    public int getUnpaidExpirationDays() {
+        return unpaidExpirationDays;
     }
 }

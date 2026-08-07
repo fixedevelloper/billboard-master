@@ -48,6 +48,7 @@ public class NotificationLogPersistenceAdapter implements NotificationLogReposit
         entity.setContent(domain.getContent());
         entity.setStatus(domain.getStatus());
         entity.setErrorMessage(domain.getErrorMessage());
+        entity.setRead(domain.isRead());
         entity.setSentAt(domain.getSentAt());
         entity.setCreatedAt(domain.getCreatedAt());
         return entity;
@@ -63,6 +64,7 @@ public class NotificationLogPersistenceAdapter implements NotificationLogReposit
                 entity.getContent(),
                 entity.getStatus(),
                 entity.getErrorMessage(),
+                entity.isRead(),
                 entity.getSentAt(),
                 entity.getCreatedAt()
         );

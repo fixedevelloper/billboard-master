@@ -50,6 +50,11 @@ public class AdminPersistenceAdapter implements AdminRepository {
         return auditLogJpaRepository.findByAdminId(adminId).stream().map(this::toDomain).collect(Collectors.toList());
     }
 
+    @Override
+    public List<AuditLog> findAllAuditLogs() {
+        return auditLogJpaRepository.findAll().stream().map(this::toDomain).collect(Collectors.toList());
+    }
+
     private AdminUserEntity toEntity(AdminUser domain) {
         AdminUserEntity entity = new AdminUserEntity();
         entity.setId(domain.getId());

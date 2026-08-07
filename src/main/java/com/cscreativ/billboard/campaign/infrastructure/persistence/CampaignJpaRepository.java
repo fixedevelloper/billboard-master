@@ -8,4 +8,5 @@ import java.util.UUID;
 public interface CampaignJpaRepository extends JpaRepository<CampaignEntity, UUID> {
     List<CampaignEntity> findByAdvertiserId(UUID advertiserId);
     List<CampaignEntity> findByStatus(CampaignStatus status);
+    List<CampaignEntity> findByBookingId(UUID bookingId);
 }

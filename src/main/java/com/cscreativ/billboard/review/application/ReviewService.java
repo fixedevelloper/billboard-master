@@ -64,6 +64,10 @@ public class ReviewService {
         return reviewRepository.findByTargetIdAndStatus(targetId, ReviewStatus.PUBLISHED);
     }
 
+    public List<BillboardReview> getAllReviews() {
+        return reviewRepository.findAll();
+    }
+
     public double calculateAverageRating(UUID targetId) {
         List<BillboardReview> reviews = getPublishedReviewsForTarget(targetId);
         return reviews.stream()

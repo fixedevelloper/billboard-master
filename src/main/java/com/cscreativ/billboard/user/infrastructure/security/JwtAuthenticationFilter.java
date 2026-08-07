@@ -27,9 +27,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
-            String jwt = header.substring(7);
+        String jwt = resolveToken(request);
+        if (jwt != null) {
             if (tokenProvider.validateToken(jwt) && SecurityContextHolder.getContext().getAuthentication() == null) {
                 try {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(tokenProvider.getEmailFromToken(jwt));
@@ -43,5 +42,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * L'API EventSource du navigateur (flux SSE de la cloche de notification) ne permet pas
+     * de définir d'en-tête Authorization : on accepte donc, uniquement pour cette route, un
+     * jeton passé en paramètre de requête.
+     */
+    private String resolveToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+        if (request.getRequestURI().contains("/api/v1/notifications/stream/")) {
+            return request.getParameter("token");
+        }
+        return null;
     }
 }

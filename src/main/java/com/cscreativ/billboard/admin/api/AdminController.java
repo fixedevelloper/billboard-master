@@ -44,4 +44,10 @@ public class AdminController {
         List<AuditLog> logs = adminService.getAuditLogsByAdmin(id);
         return ResponseEntity.ok(logs.stream().map(adminMapper::toResponse).collect(Collectors.toList()));
     }
+
+    @GetMapping("/audit-logs")
+    public ResponseEntity<List<AuditLogResponse>> getAllAuditLogs() {
+        List<AuditLog> logs = adminService.getAllAuditLogs();
+        return ResponseEntity.ok(logs.stream().map(adminMapper::toResponse).collect(Collectors.toList()));
+    }
 }

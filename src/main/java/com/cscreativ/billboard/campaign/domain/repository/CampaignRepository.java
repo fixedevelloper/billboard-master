@@ -12,4 +12,6 @@ public interface CampaignRepository {
     Optional<Campaign> findById(UUID id);
     List<Campaign> findByAdvertiserId(UUID advertiserId);
     List<Campaign> findByStatus(CampaignStatus status);
+    List<Campaign> findByBookingId(UUID bookingId);
+    List<Campaign> findAll();
 }

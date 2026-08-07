@@ -13,10 +13,11 @@ public class NotificationLog {
     private String content;
     private NotificationStatus status;
     private String errorMessage;
+    private boolean read;
     private LocalDateTime sentAt;
     private LocalDateTime createdAt;
 
-    public NotificationLog(UUID id, Recipient recipient, NotificationChannel channel, String templateCode, String content, NotificationStatus status, String errorMessage, LocalDateTime sentAt, LocalDateTime createdAt) {
+    public NotificationLog(UUID id, Recipient recipient, NotificationChannel channel, String templateCode, String content, NotificationStatus status, String errorMessage, boolean read, LocalDateTime sentAt, LocalDateTime createdAt) {
         this.id = id;
         this.recipient = recipient;
         this.channel = channel;
@@ -24,13 +25,14 @@ public class NotificationLog {
         this.content = content;
         this.status = status;
         this.errorMessage = errorMessage;
+        this.read = read;
         this.sentAt = sentAt;
         this.createdAt = createdAt;
     }
 
     public static NotificationLog createPending(Recipient recipient, NotificationChannel channel, String templateCode, String content) {
         LocalDateTime now = LocalDateTime.now();
-        return new NotificationLog(UUID.randomUUID(), recipient, channel, templateCode, content, NotificationStatus.PENDING, null, null, now);
+        return new NotificationLog(UUID.randomUUID(), recipient, channel, templateCode, content, NotificationStatus.PENDING, null, false, null, now);
     }
 
     public void markAsSent() {
@@ -43,6 +45,10 @@ public class NotificationLog {
         this.errorMessage = error;
     }
 
+    public void markAsRead() {
+        this.read = true;
+    }
+
     public UUID getId() { return id; }
     public Recipient getRecipient() { return recipient; }
     public NotificationChannel getChannel() { return channel; }
@@ -50,6 +56,7 @@ public class NotificationLog {
     public String getContent() { return content; }
     public NotificationStatus getStatus() { return status; }
     public String getErrorMessage() { return errorMessage; }
+    public boolean isRead() { return read; }
     public LocalDateTime getSentAt() { return sentAt; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 }

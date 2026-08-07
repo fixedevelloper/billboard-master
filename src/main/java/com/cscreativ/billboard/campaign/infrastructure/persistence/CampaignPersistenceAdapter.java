@@ -42,6 +42,16 @@ public class CampaignPersistenceAdapter implements CampaignRepository {
         return jpaRepository.findByStatus(status).stream().map(this::toDomain).collect(Collectors.toList());
     }
 
+    @Override
+    public List<Campaign> findByBookingId(UUID bookingId) {
+        return jpaRepository.findByBookingId(bookingId).stream().map(this::toDomain).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Campaign> findAll() {
+        return jpaRepository.findAll().stream().map(this::toDomain).collect(Collectors.toList());
+    }
+
     private CampaignEntity toEntity(Campaign domain) {
         CampaignEntity entity = new CampaignEntity();
         entity.setId(domain.getId());
@@ -49,9 +59,12 @@ public class CampaignPersistenceAdapter implements CampaignRepository {
         entity.setAdvertiserId(domain.getAdvertiserId());
         entity.setName(domain.getName());
         entity.setDescription(domain.getDescription());
-        entity.setMediaUrl(domain.getMediaAsset().getUrl());
-        entity.setMediaFileType(domain.getMediaAsset().getFileType());
-        entity.setMediaFileSizeInBytes(domain.getMediaAsset().getFileSizeInBytes());
+        MediaAsset mediaAsset = domain.getMediaAsset();
+        if (mediaAsset != null) {
+            entity.setMediaUrl(mediaAsset.getUrl());
+            entity.setMediaFileType(mediaAsset.getFileType());
+            entity.setMediaFileSizeInBytes(mediaAsset.getFileSizeInBytes());
+        }
         entity.setStatus(domain.getStatus());
         entity.setRejectionReason(domain.getRejectionReason());
         entity.setCreatedAt(domain.getCreatedAt());
@@ -60,13 +73,16 @@ public class CampaignPersistenceAdapter implements CampaignRepository {
     }
 
     private Campaign toDomain(CampaignEntity entity) {
+        MediaAsset mediaAsset = entity.getMediaUrl() == null
+                ? null
+                : new MediaAsset(entity.getMediaUrl(), entity.getMediaFileType(), entity.getMediaFileSizeInBytes());
         return new Campaign(
                 entity.getId(),
                 entity.getBookingId(),
                 entity.getAdvertiserId(),
                 entity.getName(),
                 entity.getDescription(),
-                new MediaAsset(entity.getMediaUrl(), entity.getMediaFileType(), entity.getMediaFileSizeInBytes()),
+                mediaAsset,
                 entity.getStatus(),
                 entity.getRejectionReason(),
                 entity.getCreatedAt(),

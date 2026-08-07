@@ -3,6 +3,7 @@ package com.cscreativ.billboard.user.application;
 import com.cscreativ.billboard.user.infrastructure.security.JwtTokenProvider;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -14,7 +15,7 @@ public class JwtService {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    public String generateAccessToken(UUID userId, String email) {
-        return jwtTokenProvider.generateToken(userId, email);
+    public String generateAccessToken(UUID userId, String email, Map<String, String> extraClaims) {
+        return jwtTokenProvider.generateToken(userId, email, extraClaims);
     }
 }

@@ -7,20 +7,21 @@ import { persist } from "zustand/middleware";
 interface DecodedToken {
   sub?: string;
   userId?: string;
+  advertiserId?: string;
+  ownerId?: string;
+  mediaBuyerId?: string;
+  adminId?: string;
   exp?: number;
 }
 
 interface AuthState {
   token: string | null;
-  // Le backend n'expose pas de GET /advertisers/user/{userId} (contrairement à owner/mediabuyer),
-  // donc l'advertiserId créé via "devenir annonceur" doit être mémorisé côté client.
-  advertiserId: string | null;
   // Idem : BillboardController n'a aucun endpoint "lister les billboards d'un propriétaire",
   // donc on mémorise les ids créés pour reconstituer "mes billboards" via GET /billboards/{id}.
   myBillboardIds: string[];
   setToken: (token: string | null) => void;
-  setAdvertiserId: (advertiserId: string | null) => void;
   addBillboardId: (billboardId: string) => void;
+  removeBillboardId: (billboardId: string) => void;
   logout: () => void;
 }
 
@@ -28,19 +29,19 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       token: null,
-      advertiserId: null,
       myBillboardIds: [],
       setToken: (token) => set({ token }),
-      setAdvertiserId: (advertiserId) => set({ advertiserId }),
       addBillboardId: (billboardId) =>
         set((state) => ({ myBillboardIds: [...state.myBillboardIds, billboardId] })),
-      logout: () => set({ token: null, advertiserId: null, myBillboardIds: [] }),
+      removeBillboardId: (billboardId) =>
+        set((state) => ({ myBillboardIds: state.myBillboardIds.filter((id) => id !== billboardId) })),
+      logout: () => set({ token: null, myBillboardIds: [] }),
     }),
     { name: "billboard-auth" },
   ),
 );
 
-function decodeToken(token: string): DecodedToken | null {
+export function decodeToken(token: string): DecodedToken | null {
   try {
     const payload = token.split(".")[1];
     const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
@@ -70,14 +71,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+/**
+ * advertiserId/ownerId/mediaBuyerId/adminId viennent du JWT (calculés côté serveur à la
+ * connexion, voir AuthenticationService.login côté backend) — pas de state client séparé
+ * à synchroniser, ils sont toujours à jour dès qu'on se reconnecte.
+ */
 export function useAuth() {
   const hydrated = useHydrated();
   const token = useAuthStore((state) => state.token);
-  const advertiserId = useAuthStore((state) => state.advertiserId);
   const myBillboardIds = useAuthStore((state) => state.myBillboardIds);
   const setToken = useAuthStore((state) => state.setToken);
-  const setAdvertiserId = useAuthStore((state) => state.setAdvertiserId);
   const addBillboardId = useAuthStore((state) => state.addBillboardId);
+  const removeBillboardId = useAuthStore((state) => state.removeBillboardId);
   const logout = useAuthStore((state) => state.logout);
 
   const decoded = token ? decodeToken(token) : null;
@@ -86,13 +91,16 @@ export function useAuth() {
     token: hydrated ? token : null,
     userId: hydrated ? decoded?.userId ?? null : null,
     email: hydrated ? decoded?.sub ?? null : null,
-    advertiserId: hydrated ? advertiserId : null,
+    advertiserId: hydrated ? decoded?.advertiserId ?? null : null,
+    ownerId: hydrated ? decoded?.ownerId ?? null : null,
+    mediaBuyerId: hydrated ? decoded?.mediaBuyerId ?? null : null,
+    adminId: hydrated ? decoded?.adminId ?? null : null,
     myBillboardIds: hydrated ? myBillboardIds : [],
     isAuthenticated: hydrated && !!token,
     hydrated,
     login: setToken,
-    setAdvertiserId,
     addBillboardId,
+    removeBillboardId,
     logout,
   };
 }

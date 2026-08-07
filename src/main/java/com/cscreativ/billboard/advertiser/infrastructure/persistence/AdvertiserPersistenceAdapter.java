@@ -6,8 +6,10 @@ import com.cscreativ.billboard.advertiser.domain.valueobject.CompanyName;
 import com.cscreativ.billboard.advertiser.domain.valueobject.TaxNumber;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 public class AdvertiserPersistenceAdapter implements AdvertiserRepository {
@@ -38,6 +40,11 @@ public class AdvertiserPersistenceAdapter implements AdvertiserRepository {
     @Override
     public boolean existsByTaxNumber(TaxNumber taxNumber) {
         return jpaRepository.existsByTaxNumber(taxNumber.getValue());
+    }
+
+    @Override
+    public List<Advertiser> findAll() {
+        return jpaRepository.findAll().stream().map(this::toDomain).collect(Collectors.toList());
     }
 
     private AdvertiserEntity toEntity(Advertiser domain) {

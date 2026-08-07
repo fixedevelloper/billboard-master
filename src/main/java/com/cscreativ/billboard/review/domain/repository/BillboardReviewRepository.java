@@ -12,4 +12,5 @@ public interface BillboardReviewRepository {
     Optional<BillboardReview> findById(UUID id);
     List<BillboardReview> findByTargetIdAndStatus(UUID targetId, ReviewStatus status);
     List<BillboardReview> findByAuthorId(UUID authorId);
+    List<BillboardReview> findAll();
 }

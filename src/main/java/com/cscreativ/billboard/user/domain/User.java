@@ -52,6 +52,12 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void updateProfile(FullName fullName, PhoneNumber phoneNumber) {
+        this.fullName = fullName;
+        this.phoneNumber = phoneNumber;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public UUID getId() { return id; }
     public Email getEmail() { return email; }
     public Password getPassword() { return password; }

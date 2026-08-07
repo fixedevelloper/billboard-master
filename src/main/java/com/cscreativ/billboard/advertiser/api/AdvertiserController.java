@@ -8,7 +8,9 @@ import com.cscreativ.billboard.advertiser.domain.Advertiser;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/advertisers")
@@ -44,5 +46,12 @@ public class AdvertiserController {
     public ResponseEntity<Void> verifyAdvertiser(@PathVariable UUID id) {
         advertiserService.verifyAdvertiser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<AdvertiserResponse>> getAllAdvertisers() {
+        return ResponseEntity.ok(advertiserService.getAllAdvertisers().stream()
+                .map(advertiserMapper::toResponse)
+                .collect(Collectors.toList()));
     }
 }

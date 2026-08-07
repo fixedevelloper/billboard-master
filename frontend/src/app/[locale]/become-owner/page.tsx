@@ -12,7 +12,7 @@ import { useAuth } from "@/lib/AuthProvider";
 export default function BecomeOwnerPage() {
   const t = useTranslations("owner.become");
   const router = useRouter();
-  const { userId, isAuthenticated, hydrated } = useAuth();
+  const { userId, isAuthenticated, hydrated, logout } = useAuth();
 
   useEffect(() => {
     if (hydrated && !isAuthenticated) {
@@ -73,8 +73,9 @@ export default function BecomeOwnerPage() {
           {success ? (
             <div className="flex flex-col gap-4">
               <p className="text-sm text-foreground">{t("success")}</p>
-              <Button asChild>
-                <Link href="/my-billboards">{t("continue")}</Link>
+              <p className="text-sm text-muted-foreground">{t("reloginRequired")}</p>
+              <Button onClick={() => logout()} asChild>
+                <Link href="/login">{t("continue")}</Link>
               </Button>
             </div>
           ) : (

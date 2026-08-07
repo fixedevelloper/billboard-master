@@ -14,4 +14,5 @@ public interface AdminRepository {
     
     AuditLog saveAuditLog(AuditLog auditLog);
     List<AuditLog> findAuditLogsByAdmin(UUID adminId);
+    List<AuditLog> findAllAuditLogs();
 }

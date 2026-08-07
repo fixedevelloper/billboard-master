@@ -24,6 +24,11 @@ public class MediaBuyerFacadeImpl implements MediaBuyerFacade {
     }
 
     @Override
+    public Optional<UUID> findBuyerIdByUserId(UUID userId) {
+        return mediaBuyerRepository.findByUserId(userId).map(MediaBuyer::getId);
+    }
+
+    @Override
     public boolean hasSufficientCredit(UUID buyerId, BigDecimal requiredAmount) {
         return mediaBuyerRepository.findById(buyerId)
                 .map(buyer -> buyer.canSpend(requiredAmount))

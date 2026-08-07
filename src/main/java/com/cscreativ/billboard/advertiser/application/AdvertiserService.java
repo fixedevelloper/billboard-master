@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -55,5 +56,9 @@ public class AdvertiserService {
     public Advertiser getAdvertiserById(UUID id) {
         return advertiserRepository.findById(id)
                 .orElseThrow(() -> new AdvertiserNotFoundException("Annonceur non trouvé avec l'id : " + id));
+    }
+
+    public List<Advertiser> getAllAdvertisers() {
+        return advertiserRepository.findAll();
     }
 }

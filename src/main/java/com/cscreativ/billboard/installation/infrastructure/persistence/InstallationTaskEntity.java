@@ -27,6 +27,7 @@ public class InstallationTaskEntity {
     @Column(nullable = false)
     private TaskStatus status;
 
+    @Column(length = 2000)
     private String proofPhotoUrl;
     private String proofNotes;
     private LocalDateTime proofUploadedAt;

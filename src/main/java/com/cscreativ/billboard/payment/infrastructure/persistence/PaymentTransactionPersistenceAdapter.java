@@ -41,6 +41,11 @@ public class PaymentTransactionPersistenceAdapter implements PaymentTransactionR
         return jpaRepository.findByReferenceId(referenceId).stream().map(this::toDomain).collect(Collectors.toList());
     }
 
+    @Override
+    public List<PaymentTransaction> findAll() {
+        return jpaRepository.findAll().stream().map(this::toDomain).collect(Collectors.toList());
+    }
+
     private PaymentTransactionEntity toEntity(PaymentTransaction domain) {
         PaymentTransactionEntity entity = new PaymentTransactionEntity();
         entity.setId(domain.getId());

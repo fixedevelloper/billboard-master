@@ -17,7 +17,7 @@ public class CreativeProofEntity {
     @Column(nullable = false)
     private int version;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 2000)
     private String fileUrl;
 
     private int widthInPixels;

@@ -12,7 +12,7 @@ import { useAuth } from "@/lib/AuthProvider";
 export default function BecomeAdvertiserPage() {
   const t = useTranslations("advertiser.become");
   const router = useRouter();
-  const { userId, isAuthenticated, hydrated, setAdvertiserId } = useAuth();
+  const { userId, isAuthenticated, hydrated, logout } = useAuth();
 
   useEffect(() => {
     if (hydrated && !isAuthenticated) {
@@ -41,8 +41,7 @@ export default function BecomeAdvertiserPage() {
     setSubmitting(true);
     setError(null);
     try {
-      const advertiser = await registerAdvertiser({ userId, ...form });
-      setAdvertiserId(advertiser.id);
+      await registerAdvertiser({ userId, ...form });
       setSuccess(true);
     } catch (err) {
       setError(extractErrorMessage(err, t("title")));
@@ -66,8 +65,14 @@ export default function BecomeAdvertiserPage() {
           {success ? (
             <div className="flex flex-col gap-4">
               <p className="text-sm text-foreground">{t("success")}</p>
-              <Button asChild>
-                <Link href="/billboards">{t("continue")}</Link>
+              <p className="text-sm text-muted-foreground">{t("reloginRequired")}</p>
+              <Button
+                onClick={() => {
+                  logout();
+                }}
+                asChild
+              >
+                <Link href="/login">{t("continue")}</Link>
               </Button>
             </div>
           ) : (

@@ -1,6 +1,7 @@
 package com.cscreativ.billboard.user.application;
 
 import com.cscreativ.billboard.user.domain.User;
+import com.cscreativ.billboard.user.domain.exception.InvalidPasswordException;
 import com.cscreativ.billboard.user.domain.exception.UserNotFoundException;
 import com.cscreativ.billboard.user.domain.repository.UserRepository;
 import com.cscreativ.billboard.user.domain.specification.PasswordPolicy;
@@ -29,6 +30,10 @@ public class PasswordService {
     public void changePassword(UUID userId, String oldPassword, String newPassword) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Utilisateur non trouvé"));
+
+        if (!passwordEncoder.matches(oldPassword, user.getPassword().getHashedValue())) {
+            throw new InvalidPasswordException("Mot de passe actuel incorrect");
+        }
 
         PasswordPolicy.validateRawPassword(newPassword);
         user.changePassword(new Password(passwordEncoder.encode(newPassword)));

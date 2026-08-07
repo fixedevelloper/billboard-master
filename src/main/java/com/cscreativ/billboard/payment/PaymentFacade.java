@@ -8,4 +8,5 @@ import java.util.UUID;
 public interface PaymentFacade {
     Optional<PaymentTransaction> findTransactionById(UUID transactionId);
     boolean isPaymentCompleted(UUID transactionId);
+    boolean hasCompletedPaymentForReference(UUID referenceId);
 }
