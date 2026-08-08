@@ -34,4 +34,19 @@ public class OwnerFacadeImpl implements OwnerFacade {
                 .map(owner -> owner.getStatus() == OwnerStatus.ACTIVE)
                 .orElse(false);
     }
+
+    @Override
+    public Optional<UUID> findUserIdByOwnerId(UUID ownerId) {
+        return ownerRepository.findById(ownerId).map(BillboardOwner::getUserId);
+    }
+
+    @Override
+    public Optional<String> findCompanyNameByOwnerId(UUID ownerId) {
+        return ownerRepository.findById(ownerId).map(owner -> owner.getOwnerDetails().getCompanyName());
+    }
+
+    @Override
+    public Optional<String> findContactEmailByOwnerId(UUID ownerId) {
+        return ownerRepository.findById(ownerId).map(owner -> owner.getOwnerDetails().getContactEmail());
+    }
 }

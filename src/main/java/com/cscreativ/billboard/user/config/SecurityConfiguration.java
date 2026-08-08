@@ -49,6 +49,9 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Healthcheck Docker/orchestrateur : doit rester accessible sans JWT, sinon le
+                        // conteneur est déclaré "unhealthy" et les services qui en dépendent ne démarrent pas.
+                        .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         // Étapes de création de profil pendant l'inscription : appelées juste après
                         // POST /auth/register, avant toute connexion (donc sans JWT). Doivent rester

@@ -123,6 +123,8 @@ public class PaymentService {
 
         notificationFacade.sendNotification(recipientUserId.get(), recipientEmail.get(),
                 "PAYMENT_DELEGATION_REQUEST", "IN_APP", params);
+        notificationFacade.sendNotification(recipientUserId.get(), recipientEmail.get(),
+                "PAYMENT_DELEGATION_REQUEST", "EMAIL", params);
     }
 
     /** Prévient l'annonceur que le media buyer qu'il a invité a bien finalisé le paiement. */
@@ -143,6 +145,27 @@ public class PaymentService {
 
         notificationFacade.sendNotification(recipientUserId.get(), recipientEmail.get(),
                 "PAYMENT_DELEGATION_COMPLETED", "IN_APP", params);
+        notificationFacade.sendNotification(recipientUserId.get(), recipientEmail.get(),
+                "PAYMENT_DELEGATION_COMPLETED", "EMAIL", params);
+    }
+
+    /** Prévient l'annonceur à l'origine du paiement (lui-même ou son media buyer délégué) de l'échec. */
+    private void notifyPaymentFailed(PaymentTransaction transaction) {
+        UUID advertiserId = transaction.getInitiatedBy();
+        if (advertiserId == null) {
+            return;
+        }
+        Optional<UUID> recipientUserId = advertiserFacade.findUserIdByAdvertiserId(advertiserId);
+        Optional<String> recipientEmail = advertiserFacade.findContactEmailByAdvertiserId(advertiserId);
+        if (recipientUserId.isEmpty() || recipientEmail.isEmpty()) {
+            log.warn("Paiement {} échoué : annonceur introuvable ({}), notification non envoyée", transaction.getId(), advertiserId);
+            return;
+        }
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("Montant", transaction.getMoney().getAmount() + " " + transaction.getMoney().getCurrency());
+        params.put("Référence de réservation", transaction.getReferenceId().toString());
+        params.put("Motif", transaction.getFailureReason() == null ? "Non précisé" : transaction.getFailureReason());
+        notificationFacade.sendNotification(recipientUserId.get(), recipientEmail.get(), "PAYMENT_FAILED", "EMAIL", params);
     }
 
     @Transactional
@@ -152,6 +175,7 @@ public class PaymentService {
         PaymentTransaction saved = transactionRepository.save(transaction);
 
         eventPublisher.publishEvent(new PaymentFailedEvent(saved.getId(), saved.getPayerId(), reason, LocalDateTime.now()));
+        notifyPaymentFailed(saved);
     }
 
     /**

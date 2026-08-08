@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface BookingFacade {
     Optional<Booking> findBookingById(UUID bookingId);
     boolean isBillboardAvailableForPeriod(UUID billboardId, LocalDate startDate, LocalDate endDate);
+    Optional<UUID> findBillboardIdByBooking(UUID bookingId);
+    Optional<UUID> findAdvertiserIdByBooking(UUID bookingId);
 }
