@@ -57,6 +57,7 @@ public class PaymentTransactionPersistenceAdapter implements PaymentTransactionR
         entity.setStatus(domain.getStatus());
         entity.setGatewayReference(domain.getGatewayReference());
         entity.setFailureReason(domain.getFailureReason());
+        entity.setInitiatedBy(domain.getInitiatedBy());
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setUpdatedAt(domain.getUpdatedAt());
         return entity;
@@ -73,6 +74,7 @@ public class PaymentTransactionPersistenceAdapter implements PaymentTransactionR
                 entity.getStatus(),
                 entity.getGatewayReference(),
                 entity.getFailureReason(),
+                entity.getInitiatedBy(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );

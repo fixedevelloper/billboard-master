@@ -42,7 +42,8 @@ public class PaymentController {
                 request.referenceId(),
                 request.amount(),
                 request.currency(),
-                request.paymentMethod()
+                request.paymentMethod(),
+                request.initiatedBy()
         );
         return ResponseEntity.ok(paymentMapper.toResponse(transaction));
     }

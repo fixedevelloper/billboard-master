@@ -36,6 +36,8 @@ public class PaymentTransactionEntity {
     private String gatewayReference;
     private String failureReason;
 
+    private UUID initiatedBy;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -57,6 +59,8 @@ public class PaymentTransactionEntity {
     public void setGatewayReference(String gatewayReference) { this.gatewayReference = gatewayReference; }
     public String getFailureReason() { return failureReason; }
     public void setFailureReason(String failureReason) { this.failureReason = failureReason; }
+    public UUID getInitiatedBy() { return initiatedBy; }
+    public void setInitiatedBy(UUID initiatedBy) { this.initiatedBy = initiatedBy; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

@@ -17,7 +17,7 @@ public class NotificationFacadeImpl implements NotificationFacade {
     }
 
     @Override
-    public void sendNotification(UUID recipientId, String recipientAddress, String templateCode, NotificationChannel channel, Map<String, String> parameters) {
-        notificationService.sendNotification(recipientId, recipientAddress, templateCode, channel, parameters);
+    public void sendNotification(UUID recipientId, String recipientAddress, String templateCode, String channel, Map<String, String> parameters) {
+        notificationService.sendNotification(recipientId, recipientAddress, templateCode, NotificationChannel.valueOf(channel), parameters);
     }
 }

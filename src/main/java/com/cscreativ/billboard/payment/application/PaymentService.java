@@ -1,6 +1,9 @@
 package com.cscreativ.billboard.payment.application;
 
+import com.cscreativ.billboard.advertiser.AdvertiserFacade;
 import com.cscreativ.billboard.contract.ContractFacade;
+import com.cscreativ.billboard.mediabuyer.MediaBuyerFacade;
+import com.cscreativ.billboard.notification.NotificationFacade;
 import com.cscreativ.billboard.payment.domain.PaymentMethod;
 import com.cscreativ.billboard.payment.domain.PaymentStatus;
 import com.cscreativ.billboard.payment.domain.PaymentTransaction;
@@ -13,6 +16,8 @@ import com.cscreativ.billboard.payment.events.PaymentInitiatedEvent;
 import com.cscreativ.billboard.payment.infrastructure.gateway.FlutterwaveClient;
 import com.cscreativ.billboard.payment.infrastructure.gateway.FlutterwaveException;
 import com.cscreativ.billboard.payment.infrastructure.gateway.FlutterwaveVerificationResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -20,27 +25,40 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class PaymentService {
 
+    private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
+
     private final PaymentTransactionRepository transactionRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final ContractFacade contractFacade;
     private final FlutterwaveClient flutterwaveClient;
+    private final AdvertiserFacade advertiserFacade;
+    private final MediaBuyerFacade mediaBuyerFacade;
+    private final NotificationFacade notificationFacade;
     private final String backendUrl;
     private final String frontendUrl;
 
     public PaymentService(PaymentTransactionRepository transactionRepository, ApplicationEventPublisher eventPublisher,
                            ContractFacade contractFacade, FlutterwaveClient flutterwaveClient,
+                           AdvertiserFacade advertiserFacade, MediaBuyerFacade mediaBuyerFacade,
+                           NotificationFacade notificationFacade,
                            @Value("${app.backend-url}") String backendUrl,
                            @Value("${app.frontend-url}") String frontendUrl) {
         this.transactionRepository = transactionRepository;
         this.eventPublisher = eventPublisher;
         this.contractFacade = contractFacade;
         this.flutterwaveClient = flutterwaveClient;
+        this.advertiserFacade = advertiserFacade;
+        this.mediaBuyerFacade = mediaBuyerFacade;
+        this.notificationFacade = notificationFacade;
         this.backendUrl = backendUrl;
         this.frontendUrl = frontendUrl;
     }
@@ -48,20 +66,27 @@ public class PaymentService {
     /**
      * referenceId désigne ici la réservation (bookingId) : le paiement porte sur la location
      * du panneau, réglée avant la création de la campagne (contrat signé → paiement → campagne).
+     * initiatedBy est l'annonceur à l'origine de l'appel ; quand il diffère de payerId,
+     * l'annonceur délègue le règlement à un media buyer, qui est alors notifié (invitation
+     * à finaliser le paiement) — voir notifyDelegatedPayer.
      */
     @Transactional
-    public PaymentTransaction initiatePayment(UUID payerId, UUID referenceId, BigDecimal amount, String currency, PaymentMethod paymentMethod) {
+    public PaymentTransaction initiatePayment(UUID payerId, UUID referenceId, BigDecimal amount, String currency, PaymentMethod paymentMethod, UUID initiatedBy) {
         if (!contractFacade.isSignedForBooking(referenceId)) {
             throw new IllegalStateException("Le paiement ne peut être initié tant que le contrat n'est pas signé par les deux parties");
         }
 
         Money money = new Money(amount, currency);
-        PaymentTransaction transaction = PaymentTransaction.initiate(payerId, referenceId, money, paymentMethod);
+        PaymentTransaction transaction = PaymentTransaction.initiate(payerId, referenceId, money, paymentMethod, initiatedBy);
         PaymentTransaction saved = transactionRepository.save(transaction);
 
         eventPublisher.publishEvent(new PaymentInitiatedEvent(
                 saved.getId(), saved.getPayerId(), saved.getReferenceId(), saved.getMoney().getAmount(), saved.getMoney().getCurrency(), LocalDateTime.now()
         ));
+
+        if (saved.isDelegated()) {
+            notifyDelegatedPayer(saved);
+        }
         return saved;
     }
 
@@ -74,6 +99,50 @@ public class PaymentService {
         eventPublisher.publishEvent(new PaymentCompletedEvent(
                 saved.getId(), saved.getPayerId(), saved.getReferenceId(), saved.getMoney().getAmount(), gatewayReference, LocalDateTime.now()
         ));
+
+        if (saved.isDelegated()) {
+            notifyDelegatingAdvertiser(saved);
+        }
+    }
+
+    /** Invite le media buyer choisi par l'annonceur à finaliser le paiement délégué. */
+    private void notifyDelegatedPayer(PaymentTransaction transaction) {
+        UUID mediaBuyerId = transaction.getPayerId();
+        Optional<UUID> recipientUserId = mediaBuyerFacade.findUserIdByBuyerId(mediaBuyerId);
+        Optional<String> recipientEmail = mediaBuyerFacade.findContactEmailByBuyerId(mediaBuyerId);
+        if (recipientUserId.isEmpty() || recipientEmail.isEmpty()) {
+            log.warn("Paiement {} délégué à un media buyer introuvable ({}), notification non envoyée", transaction.getId(), mediaBuyerId);
+            return;
+        }
+        String advertiserName = advertiserFacade.findCompanyNameByAdvertiserId(transaction.getInitiatedBy()).orElse("Un annonceur");
+
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("Annonceur", advertiserName);
+        params.put("Montant", transaction.getMoney().getAmount() + " " + transaction.getMoney().getCurrency());
+        params.put("Référence de réservation", transaction.getReferenceId().toString());
+
+        notificationFacade.sendNotification(recipientUserId.get(), recipientEmail.get(),
+                "PAYMENT_DELEGATION_REQUEST", "IN_APP", params);
+    }
+
+    /** Prévient l'annonceur que le media buyer qu'il a invité a bien finalisé le paiement. */
+    private void notifyDelegatingAdvertiser(PaymentTransaction transaction) {
+        UUID advertiserId = transaction.getInitiatedBy();
+        Optional<UUID> recipientUserId = advertiserFacade.findUserIdByAdvertiserId(advertiserId);
+        Optional<String> recipientEmail = advertiserFacade.findContactEmailByAdvertiserId(advertiserId);
+        if (recipientUserId.isEmpty() || recipientEmail.isEmpty()) {
+            log.warn("Paiement {} finalisé mais annonceur délégant introuvable ({}), notification non envoyée", transaction.getId(), advertiserId);
+            return;
+        }
+        String mediaBuyerName = mediaBuyerFacade.findCompanyNameByBuyerId(transaction.getPayerId()).orElse("Votre media buyer");
+
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("Media buyer", mediaBuyerName);
+        params.put("Montant", transaction.getMoney().getAmount() + " " + transaction.getMoney().getCurrency());
+        params.put("Référence de réservation", transaction.getReferenceId().toString());
+
+        notificationFacade.sendNotification(recipientUserId.get(), recipientEmail.get(),
+                "PAYMENT_DELEGATION_COMPLETED", "IN_APP", params);
     }
 
     @Transactional

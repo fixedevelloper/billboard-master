@@ -1,0 +1,66 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+
+  docker:
+
+    runs-on: ubuntu-latest
+
+    environment: production
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Login GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/guenspub-api:latest
+            ghcr.io/${{ github.repository_owner }}/guenspub-api:${{ github.sha }}
+      - name: Debug host
+        run: |
+         echo "Host:"
+         echo "${{ secrets.SERVER_HOST }}"
+           echo "${{ secrets.SERVER_PORT }}"
+
+      - name: Deploy VPS
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+
+          script: |
+            echo "Connexion VPS OK"
+
+            docker login ghcr.io \
+              -u ${{ github.actor }} \
+              -p ${{ secrets.GITHUB_TOKEN }}
+
+            cd /opt/billboard
+
+            docker compose pull
+
+            docker compose up -d
+
+            docker image prune -f

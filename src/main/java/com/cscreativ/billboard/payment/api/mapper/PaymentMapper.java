@@ -18,6 +18,8 @@ public class PaymentMapper {
                 transaction.getStatus().name(),
                 transaction.getGatewayReference(),
                 transaction.getFailureReason(),
+                transaction.getInitiatedBy(),
+                transaction.isDelegated(),
                 transaction.getCreatedAt()
         );
     }

@@ -34,4 +34,19 @@ public class MediaBuyerFacadeImpl implements MediaBuyerFacade {
                 .map(buyer -> buyer.canSpend(requiredAmount))
                 .orElse(false);
     }
+
+    @Override
+    public Optional<UUID> findUserIdByBuyerId(UUID buyerId) {
+        return mediaBuyerRepository.findById(buyerId).map(MediaBuyer::getUserId);
+    }
+
+    @Override
+    public Optional<String> findCompanyNameByBuyerId(UUID buyerId) {
+        return mediaBuyerRepository.findById(buyerId).map(buyer -> buyer.getCompanyDetails().getCompanyName());
+    }
+
+    @Override
+    public Optional<String> findContactEmailByBuyerId(UUID buyerId) {
+        return mediaBuyerRepository.findById(buyerId).map(buyer -> buyer.getCompanyDetails().getContactEmail());
+    }
 }

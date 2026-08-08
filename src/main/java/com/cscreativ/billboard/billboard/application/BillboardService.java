@@ -10,6 +10,7 @@ import com.cscreativ.billboard.billboard.domain.valueobject.Dimensions;
 import com.cscreativ.billboard.billboard.domain.valueobject.Location;
 import com.cscreativ.billboard.billboard.domain.valueobject.Pricing;
 import com.cscreativ.billboard.billboard.events.BillboardCreatedEvent;
+import com.cscreativ.billboard.city.CityFacade;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,19 +26,23 @@ public class BillboardService {
     private final BillboardRepository billboardRepository;
     private final BillboardImageRepository billboardImageRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final CityFacade cityFacade;
 
     public BillboardService(BillboardRepository billboardRepository,
                              BillboardImageRepository billboardImageRepository,
-                             ApplicationEventPublisher eventPublisher) {
+                             ApplicationEventPublisher eventPublisher,
+                             CityFacade cityFacade) {
         this.billboardRepository = billboardRepository;
         this.billboardImageRepository = billboardImageRepository;
         this.eventPublisher = eventPublisher;
+        this.cityFacade = cityFacade;
     }
 
     @Transactional
     public Billboard createBillboard(String title, String description, BillboardType type,
                                       String address, String city, double lat, double lng,
                                       double width, double height, BigDecimal dailyRate, String currency, UUID ownerId) {
+        requireKnownCity(city);
         Location location = new Location(address, city, lat, lng);
         Dimensions dimensions = new Dimensions(width, height);
         Pricing pricing = new Pricing(dailyRate, currency);
@@ -70,6 +75,7 @@ public class BillboardService {
     public Billboard updateBillboard(UUID id, String title, String description, BillboardType type,
                                       String address, String city, double lat, double lng,
                                       double width, double height, BigDecimal dailyRate, String currency) {
+        requireKnownCity(city);
         Billboard billboard = getBillboardById(id);
 
         Location location = new Location(address, city, lat, lng);
@@ -101,5 +107,11 @@ public class BillboardService {
     @Transactional
     public void removeImage(UUID imageId) {
         billboardImageRepository.deleteById(imageId);
+    }
+
+    private void requireKnownCity(String city) {
+        if (!cityFacade.existsByName(city)) {
+            throw new IllegalArgumentException("Ville inconnue : " + city + " (enregistrez-la d'abord via /api/v1/cities)");
+        }
     }
 }

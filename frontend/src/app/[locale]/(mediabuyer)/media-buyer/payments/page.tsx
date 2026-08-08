@@ -15,13 +15,25 @@ import {
   ShieldAlert,
   Send,
   Hash,
+  Building2,
+  User,
+  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { completePayment, extractErrorMessage, getPaymentsByPayer, PaymentTransactionResponse } from "@/lib/api";
+import {
+  completePayment,
+  extractErrorMessage,
+  getAdvertiser,
+  getBillboard,
+  getBooking,
+  getMediaBuyer,
+  getPaymentsByPayer,
+  initiateFlutterwaveCheckout,
+  PaymentTransactionResponse,
+} from "@/lib/api";
 import { useAuth } from "@/lib/AuthProvider";
 import { cn } from "@/lib/utils";
 
@@ -83,6 +95,39 @@ function PaymentStatusBadge({ status }: { status: string }) {
   );
 }
 
+// Contexte de la délégation : quel panneau, demandé par quel annonceur
+function DelegationContext({ payment }: { payment: PaymentTransactionResponse }) {
+  const { data: booking } = useSWR(["booking", payment.referenceId], () => getBooking(payment.referenceId));
+  const { data: billboard } = useSWR(
+    booking ? ["billboard", booking.billboardId] : null,
+    () => getBillboard(booking!.billboardId),
+  );
+  const { data: advertiser } = useSWR(
+    payment.initiatedBy ? ["advertiser", payment.initiatedBy] : null,
+    () => getAdvertiser(payment.initiatedBy!),
+  );
+
+  if (!billboard && !advertiser) return null;
+
+  return (
+      <div className="flex flex-col gap-1 rounded-xl bg-muted/40 p-3 text-xs">
+        {billboard && (
+            <div className="flex items-center gap-1.5">
+              <Building2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <span className="font-medium text-foreground">{billboard.title}</span>
+              {billboard.city && <span className="text-muted-foreground">· {billboard.city}</span>}
+            </div>
+        )}
+        {advertiser && (
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <User className="h-3.5 w-3.5 shrink-0" />
+              <span>Demandé par {advertiser.companyName}</span>
+            </div>
+        )}
+      </div>
+  );
+}
+
 export default function MediaBuyerPaymentsPage() {
   const t = useTranslations("mediaBuyerPayments");
   const tPayments = useTranslations("payments");
@@ -98,8 +143,11 @@ export default function MediaBuyerPaymentsPage() {
       ([, payerId]) => getPaymentsByPayer(payerId)
   );
 
+  const { data: mediaBuyer } = useSWR(mediaBuyerId ? ["media-buyer", mediaBuyerId] : null, () => getMediaBuyer(mediaBuyerId!));
+
   const [gatewayReferences, setGatewayReferences] = useState<Record<string, string>>({});
   const [completingId, setCompletingId] = useState<string | null>(null);
+  const [redirectingId, setRedirectingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function handleComplete(event: FormEvent, paymentId: string) {
@@ -113,6 +161,22 @@ export default function MediaBuyerPaymentsPage() {
       setError(extractErrorMessage(err, t("complete")));
     } finally {
       setCompletingId(null);
+    }
+  }
+
+  async function handleFlutterwaveCheckout(paymentId: string) {
+    setRedirectingId(paymentId);
+    setError(null);
+    try {
+      const { checkoutUrl } = await initiateFlutterwaveCheckout(paymentId, {
+        customerEmail: mediaBuyer?.contactEmail ?? "",
+        customerName: mediaBuyer?.companyName ?? "",
+        customerPhone: mediaBuyer?.phoneNumber ?? undefined,
+      });
+      window.location.href = checkoutUrl;
+    } catch (err) {
+      setError(extractErrorMessage(err, tPayments("title")));
+      setRedirectingId(null);
     }
   }
 
@@ -181,7 +245,9 @@ export default function MediaBuyerPaymentsPage() {
             <div className="flex flex-col gap-4">
               {payments.map((payment: PaymentTransactionResponse) => {
                 const isCompleting = completingId === payment.id;
+                const isRedirecting = redirectingId === payment.id;
                 const isPending = payment.status === "PENDING";
+                const isFlutterwave = payment.paymentMethod === "FLUTTERWAVE";
 
                 return (
                     <Card
@@ -208,6 +274,8 @@ export default function MediaBuyerPaymentsPage() {
                       </CardHeader>
 
                       <CardContent className="p-5 pt-0 space-y-4">
+                        {payment.delegated && <DelegationContext payment={payment} />}
+
                         {/* Informations détaillées */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-xl bg-muted/40 p-3 text-xs">
                           <div>
@@ -225,8 +293,26 @@ export default function MediaBuyerPaymentsPage() {
                           )}
                         </div>
 
-                        {/* Formulaire de complétion pour les paiements PENDING */}
-                        {isPending && (
+                        {/* Paiement Flutterwave : redirection vers le checkout hébergé */}
+                        {isPending && isFlutterwave && (
+                            <Button
+                                type="button"
+                                size="sm"
+                                onClick={() => handleFlutterwaveCheckout(payment.id)}
+                                disabled={isRedirecting}
+                                className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-600/20"
+                            >
+                              {isRedirecting ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                  <Wallet className="h-4 w-4" />
+                              )}
+                              <span>{tPayments("payViaFlutterwave")}</span>
+                            </Button>
+                        )}
+
+                        {/* Formulaire de complétion manuelle pour les autres moyens de paiement */}
+                        {isPending && !isFlutterwave && (
                             <form
                                 className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 border-t border-border/40 pt-4"
                                 onSubmit={(event) => handleComplete(event, payment.id)}

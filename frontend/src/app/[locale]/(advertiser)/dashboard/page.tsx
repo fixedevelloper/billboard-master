@@ -203,7 +203,7 @@ export default function AdvertiserDashboardPage() {
                         <div className="flex items-center justify-between sm:justify-end gap-3">
                           <BookingStatusBadge status={booking.status} />
                           <Button asChild variant="outline" size="sm" className="h-8 text-xs opacity-90 group-hover:opacity-100">
-                            <Link href={`/my-bookings`}>Détails</Link>
+                            <Link href={`/bookings/${booking.id}`}>Détails</Link>
                           </Button>
                         </div>
                       </div>

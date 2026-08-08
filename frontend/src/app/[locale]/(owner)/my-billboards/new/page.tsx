@@ -23,6 +23,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { CityCombobox } from "@/components/billboards/CityCombobox";
 import {
   Dialog,
   DialogContent,
@@ -539,14 +540,22 @@ export default function NewBillboardPage() {
                           onChange={updateField("address")}
                           required
                       />
-                      <Input
-                          name="city"
-                          label={t("city")}
-                          placeholder="Ville"
-                          value={form.city}
-                          onChange={updateField("city")}
-                          required
-                      />
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-medium" htmlFor="city">
+                          {t("city")}
+                        </label>
+                        <CityCombobox
+                            value={form.city}
+                            onSelect={(city) =>
+                                setForm((prev) => ({
+                                  ...prev,
+                                  city: city.name,
+                                  latitude: String(city.latitude),
+                                  longitude: String(city.longitude),
+                                }))
+                            }
+                        />
+                      </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <Input

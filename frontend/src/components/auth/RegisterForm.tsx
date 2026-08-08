@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   extractErrorMessage,
@@ -187,9 +188,8 @@ export function RegisterForm() {
                     />
                   </div>
 
-                  <Input
+                  <PasswordInput
                       name="password"
-                      type="password"
                       label={tCommon("password")}
                       value={account.password}
                       onChange={updateAccount("password")}

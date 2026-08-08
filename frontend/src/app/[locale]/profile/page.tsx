@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserProfile, updateUserProfile, changePassword, extractErrorMessage } from "@/lib/api";
 import { useAuth } from "@/lib/AuthProvider";
@@ -319,22 +320,19 @@ export default function ProfilePage() {
                       </Button>
                     </div>
 
-                    <Input
-                        type="password"
+                    <PasswordInput
                         label={t("currentPassword", { defaultValue: "Mot de passe actuel" })}
                         value={passwordForm.currentPassword}
                         onChange={(e) => setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))}
                         required
                     />
-                    <Input
-                        type="password"
+                    <PasswordInput
                         label={t("newPassword", { defaultValue: "Nouveau mot de passe" })}
                         value={passwordForm.newPassword}
                         onChange={(e) => setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))}
                         required
                     />
-                    <Input
-                        type="password"
+                    <PasswordInput
                         label={t("confirmPassword", { defaultValue: "Confirmer le mot de passe" })}
                         value={passwordForm.confirmPassword}
                         onChange={(e) => setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}

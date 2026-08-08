@@ -178,6 +178,44 @@ export async function verifyAdvertiser(id: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// city
+// ---------------------------------------------------------------------------
+
+export interface CityResponse {
+  id: string;
+  name: string;
+  country: string | null;
+  latitude: number;
+  longitude: number;
+}
+
+export interface CreateCityInput {
+  name: string;
+  country?: string;
+  latitude: number;
+  longitude: number;
+}
+
+export async function getCities(query?: string): Promise<CityResponse[]> {
+  const response = await apiClient.get<CityResponse[]>("/api/v1/cities", { params: query ? { query } : undefined });
+  return response.data;
+}
+
+export async function createCity(input: CreateCityInput): Promise<CityResponse> {
+  const response = await apiClient.post<CityResponse>("/api/v1/cities", input);
+  return response.data;
+}
+
+export async function updateCity(id: string, input: CreateCityInput): Promise<CityResponse> {
+  const response = await apiClient.put<CityResponse>(`/api/v1/cities/${id}`, input);
+  return response.data;
+}
+
+export async function deleteCity(id: string): Promise<void> {
+  await apiClient.delete(`/api/v1/cities/${id}`);
+}
+
+// ---------------------------------------------------------------------------
 // billboard
 // ---------------------------------------------------------------------------
 
@@ -481,6 +519,7 @@ export interface InitiatePaymentInput {
   amount: string;
   currency: string;
   paymentMethod: PaymentMethod;
+  initiatedBy: string;
 }
 
 export interface CompletePaymentInput {
@@ -497,6 +536,8 @@ export interface PaymentTransactionResponse {
   status: string;
   gatewayReference: string | null;
   failureReason: string | null;
+  initiatedBy: string | null;
+  delegated: boolean;
   createdAt: string;
 }
 
@@ -598,6 +639,11 @@ export async function registerMediaBuyer(input: RegisterMediaBuyerInput): Promis
 
 export async function listMediaBuyers(): Promise<MediaBuyerResponse[]> {
   const response = await apiClient.get<MediaBuyerResponse[]>("/api/v1/media-buyers");
+  return response.data;
+}
+
+export async function getMediaBuyer(id: string): Promise<MediaBuyerResponse> {
+  const response = await apiClient.get<MediaBuyerResponse>(`/api/v1/media-buyers/${id}`);
   return response.data;
 }
 

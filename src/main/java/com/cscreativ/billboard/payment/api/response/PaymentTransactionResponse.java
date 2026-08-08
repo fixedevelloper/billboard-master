@@ -14,5 +14,7 @@ public record PaymentTransactionResponse(
         String status,
         String gatewayReference,
         String failureReason,
+        UUID initiatedBy,
+        boolean delegated,
         LocalDateTime createdAt
 ) {}

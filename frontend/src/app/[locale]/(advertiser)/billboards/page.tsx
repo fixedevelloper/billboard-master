@@ -5,11 +5,11 @@ import { Search, MapPin, Loader2, Sparkles, AlertCircle, ArrowRight, Eye, Tag } 
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BillboardResponse, extractErrorMessage, searchBillboardsByCity } from "@/lib/api";
 import { BillboardThumbnail } from "@/components/billboards/BillboardThumbnail";
+import { CityCombobox } from "@/components/billboards/CityCombobox";
 import { cn } from "@/lib/utils";
 
 // Standard UI Badges for Billboard Types
@@ -101,18 +101,11 @@ export default function BillboardsSearchPage() {
                   <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
                   <span>{t("cityLabel")}</span>
                 </label>
-                <div className="relative">
-                  <Input
-                      id="city"
-                      name="city"
-                      placeholder={t("cityPlaceholder")}
-                      value={city}
-                      onChange={(event) => setCity(event.target.value)}
-                      required
-                      className="h-11 pl-9 text-sm bg-background border-border/80 focus-visible:ring-emerald-500"
-                  />
-                  <Search className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground pointer-events-none" />
-                </div>
+                <CityCombobox
+                    value={city}
+                    onSelect={(selected) => setCity(selected.name)}
+                    placeholder={t("cityPlaceholder")}
+                />
               </div>
 
               <Button

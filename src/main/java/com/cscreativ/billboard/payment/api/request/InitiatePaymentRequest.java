@@ -10,5 +10,6 @@ public record InitiatePaymentRequest(
         UUID referenceId,
         BigDecimal amount,
         String currency,
-        PaymentMethod paymentMethod
+        PaymentMethod paymentMethod,
+        UUID initiatedBy
 ) {}

@@ -11,4 +11,7 @@ public interface AdvertiserFacade {
     // hors du module, même en retour d'une méthode de Facade (vérifié par ApplicationModules.verify()).
     Optional<UUID> findAdvertiserIdByUserId(UUID userId);
     boolean isVerified(UUID advertiserId);
+    Optional<UUID> findUserIdByAdvertiserId(UUID advertiserId);
+    Optional<String> findCompanyNameByAdvertiserId(UUID advertiserId);
+    Optional<String> findContactEmailByAdvertiserId(UUID advertiserId);
 }

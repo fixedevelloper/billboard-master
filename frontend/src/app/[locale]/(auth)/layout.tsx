@@ -24,15 +24,14 @@ export default async function AuthLayout({
         <div className="flex flex-col min-h-screen justify-between p-6 sm:p-8 md:p-12 lg:p-16">
           {/* En-tête / Logo */}
           <header className="flex items-center justify-between">
-            <Link
-                href="/"
-                className="group flex items-center gap-2 text-xl font-bold tracking-tight text-foreground transition-colors hover:text-primary"
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-black text-sm group-hover:scale-105 transition-transform">
-                B
-              </div>
-              <span>Billboard</span>
-            </Link>
+            <Image
+                src="/logo.png" // Remplacez par le chemin exact de votre image (ex: dans /public)
+                alt="Guen's Pub Logo"
+                width={180}
+                height={60}
+                className="object-cover"
+                priority
+            />
           </header>
 
           {/* Zone centrale du Formulaire */}

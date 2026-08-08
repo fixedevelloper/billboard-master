@@ -19,6 +19,7 @@ import {
   getBillboard,
   getBooking,
   getContractByBooking,
+  getMediaBuyer,
   getPaymentsByReference,
   initiateFlutterwaveCheckout,
   initiatePayment,
@@ -77,6 +78,11 @@ export default function BookingPaymentPage({ params }: { params: Promise<{ id: s
   const activePayment = payment ?? existingPayment;
   const displayAmount = amount || booking?.totalPrice || "";
 
+  const { data: delegatedMediaBuyer } = useSWR(
+    activePayment?.delegated ? ["media-buyer", activePayment.payerId] : null,
+    ([, payerId]) => getMediaBuyer(payerId),
+  );
+
   useEffect(() => {
     if (flutterwaveResult) {
       mutatePayments();
@@ -110,9 +116,12 @@ export default function BookingPaymentPage({ params }: { params: Promise<{ id: s
         amount: displayAmount,
         currency: booking.currency,
         paymentMethod: method,
+        initiatedBy: advertiserId,
       });
 
-      if (method === "FLUTTERWAVE") {
+      // Un paiement délégué doit être finalisé par le media buyer lui-même, pas dans cette
+      // session : on ne redirige donc jamais l'annonceur vers le checkout Flutterwave ici.
+      if (method === "FLUTTERWAVE" && !delegate) {
         setRedirectingToFlutterwave(true);
         const { checkoutUrl } = await initiateFlutterwaveCheckout(result.id, {
           customerEmail: advertiser?.contactEmail ?? "",
@@ -295,13 +304,21 @@ export default function BookingPaymentPage({ params }: { params: Promise<{ id: s
               <p>
                 {t("amount")}: {activePayment.amount} {activePayment.currency}
               </p>
-              {delegate && selectedMediaBuyer && (
+              {activePayment.delegated && (
                 <p>
-                  {t("delegatedTo")}: {selectedMediaBuyer.companyName}
+                  {t("delegatedTo")}: {selectedMediaBuyer?.companyName ?? delegatedMediaBuyer?.companyName ?? "…"}
                 </p>
               )}
 
-              {activePayment.status === "PENDING" && (
+              {activePayment.status === "PENDING" && activePayment.delegated && (
+                <p className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-amber-700 dark:text-amber-400">
+                  {t("waitingForMediaBuyer", {
+                    name: selectedMediaBuyer?.companyName ?? delegatedMediaBuyer?.companyName ?? "…",
+                  })}
+                </p>
+              )}
+
+              {activePayment.status === "PENDING" && !activePayment.delegated && (
                 <form className="flex flex-col gap-3" onSubmit={handleComplete}>
                   <Input
                     name="gatewayReference"

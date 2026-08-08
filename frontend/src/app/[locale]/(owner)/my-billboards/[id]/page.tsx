@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { BillboardImagesModal } from "@/components/billboards/BillboardImagesModal";
+import { CityCombobox } from "@/components/billboards/CityCombobox";
 import {
   BillboardType,
   deleteBillboard,
@@ -215,7 +216,22 @@ export default function EditBillboardPage() {
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Input name="address" label={t("address")} value={form.address} onChange={updateField("address")} required />
-                <Input name="city" label={t("city")} value={form.city} onChange={updateField("city")} required />
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium" htmlFor="city">
+                    {t("city")}
+                  </label>
+                  <CityCombobox
+                    value={form.city}
+                    onSelect={(city) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        city: city.name,
+                        latitude: String(city.latitude),
+                        longitude: String(city.longitude),
+                      }))
+                    }
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Input

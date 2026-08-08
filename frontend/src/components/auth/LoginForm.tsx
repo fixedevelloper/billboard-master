@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { extractErrorMessage, loginUser } from "@/lib/api";
 import { decodeToken, useAuth } from "@/lib/AuthProvider";
@@ -66,9 +67,8 @@ export function LoginForm() {
               />
 
               <div className="space-y-1">
-                <Input
+                <PasswordInput
                     name="password"
-                    type="password"
                     label={tCommon("password")}
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}

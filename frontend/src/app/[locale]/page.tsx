@@ -49,7 +49,7 @@ export default async function HomePage({
                 {/* Badge d'introduction */}
                 <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-medium text-white backdrop-blur-md shadow-inner sm:text-sm">
                     <Sparkles className="h-4 w-4 text-amber-400" />
-                    <span>Billboard Digital & Out-Of-Home</span>
+                    <span>Guen's Pub Digital & Out-Of-Home</span>
                 </div>
 
                 {/* Titre principal responsive */}

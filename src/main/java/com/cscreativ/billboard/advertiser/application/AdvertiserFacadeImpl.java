@@ -34,4 +34,19 @@ public class AdvertiserFacadeImpl implements AdvertiserFacade {
                 .map(advertiser -> advertiser.getStatus() == AdvertiserStatus.VERIFIED)
                 .orElse(false);
     }
+
+    @Override
+    public Optional<UUID> findUserIdByAdvertiserId(UUID advertiserId) {
+        return advertiserRepository.findById(advertiserId).map(Advertiser::getUserId);
+    }
+
+    @Override
+    public Optional<String> findCompanyNameByAdvertiserId(UUID advertiserId) {
+        return advertiserRepository.findById(advertiserId).map(advertiser -> advertiser.getCompanyName().getValue());
+    }
+
+    @Override
+    public Optional<String> findContactEmailByAdvertiserId(UUID advertiserId) {
+        return advertiserRepository.findById(advertiserId).map(Advertiser::getContactEmail);
+    }
 }

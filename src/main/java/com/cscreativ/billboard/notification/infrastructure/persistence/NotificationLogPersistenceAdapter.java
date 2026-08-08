@@ -5,6 +5,7 @@ import com.cscreativ.billboard.notification.domain.repository.NotificationLogRep
 import com.cscreativ.billboard.notification.domain.valueobject.Recipient;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,6 +37,11 @@ public class NotificationLogPersistenceAdapter implements NotificationLogReposit
         return jpaRepository.findByRecipientId(recipientId).stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public int deleteReadOlderThan(LocalDateTime threshold) {
+        return jpaRepository.deleteByReadTrueAndCreatedAtBefore(threshold);
     }
 
     private NotificationLogEntity toEntity(NotificationLog domain) {
