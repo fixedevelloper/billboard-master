@@ -37,4 +37,14 @@ public class CampaignFacadeImpl implements CampaignFacade {
                 .map(Campaign::getId)
                 .toList();
     }
+
+    @Override
+    public Optional<UUID> findAdvertiserIdByCampaign(UUID campaignId) {
+        return campaignRepository.findById(campaignId).map(Campaign::getAdvertiserId);
+    }
+
+    @Override
+    public Optional<UUID> findBookingIdByCampaign(UUID campaignId) {
+        return campaignRepository.findById(campaignId).map(Campaign::getBookingId);
+    }
 }

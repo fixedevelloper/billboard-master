@@ -8,7 +8,9 @@ import com.cscreativ.billboard.admin.api.response.AuditLogResponse;
 import com.cscreativ.billboard.admin.application.AdminService;
 import com.cscreativ.billboard.admin.domain.AdminUser;
 import com.cscreativ.billboard.admin.domain.AuditLog;
+import com.cscreativ.billboard.shared.AuthenticatedUser;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,25 +30,32 @@ public class AdminController {
     }
 
     @PostMapping
-    public ResponseEntity<AdminResponse> createAdmin(@RequestBody CreateAdminRequest request) {
+    public ResponseEntity<AdminResponse> createAdmin(@RequestBody CreateAdminRequest request,
+                                                      @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireAdmin();
         AdminUser admin = adminService.createAdmin(request.userId(), request.roles());
         return ResponseEntity.ok(adminMapper.toResponse(admin));
     }
 
     @PostMapping("/{id}/actions")
-    public ResponseEntity<Void> logAction(@PathVariable UUID id, @RequestBody LogActionRequest request) {
+    public ResponseEntity<Void> logAction(@PathVariable UUID id, @RequestBody LogActionRequest request,
+                                           @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.require(currentUser.isAdmin() && id.equals(currentUser.getAdminId()));
         adminService.logAdminAction(id, request.action(), request.targetEntity(), request.targetId(), request.details());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/audit-logs")
-    public ResponseEntity<List<AuditLogResponse>> getAuditLogs(@PathVariable UUID id) {
+    public ResponseEntity<List<AuditLogResponse>> getAuditLogs(@PathVariable UUID id,
+                                                                @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireAdmin();
         List<AuditLog> logs = adminService.getAuditLogsByAdmin(id);
         return ResponseEntity.ok(logs.stream().map(adminMapper::toResponse).collect(Collectors.toList()));
     }
 
     @GetMapping("/audit-logs")
-    public ResponseEntity<List<AuditLogResponse>> getAllAuditLogs() {
+    public ResponseEntity<List<AuditLogResponse>> getAllAuditLogs(@AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireAdmin();
         List<AuditLog> logs = adminService.getAllAuditLogs();
         return ResponseEntity.ok(logs.stream().map(adminMapper::toResponse).collect(Collectors.toList()));
     }

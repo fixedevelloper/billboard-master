@@ -5,7 +5,9 @@ import com.cscreativ.billboard.platformsettings.api.request.SaveSettingRequest;
 import com.cscreativ.billboard.platformsettings.api.response.SettingResponse;
 import com.cscreativ.billboard.platformsettings.application.ConfigService;
 import com.cscreativ.billboard.platformsettings.domain.PlatformSetting;
+import com.cscreativ.billboard.shared.AuthenticatedUser;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,7 +26,9 @@ public class ConfigController {
     }
 
     @PostMapping
-    public ResponseEntity<SettingResponse> saveSetting(@RequestBody SaveSettingRequest request) {
+    public ResponseEntity<SettingResponse> saveSetting(@RequestBody SaveSettingRequest request,
+                                                        @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireAdmin();
         PlatformSetting setting = configService.setSetting(
                 request.key(),
                 request.value(),

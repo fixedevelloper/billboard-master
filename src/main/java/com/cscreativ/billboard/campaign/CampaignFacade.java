@@ -10,4 +10,6 @@ public interface CampaignFacade {
     Optional<Campaign> findCampaignById(UUID campaignId);
     boolean isApproved(UUID campaignId);
     List<UUID> findCampaignIdsByBooking(UUID bookingId);
+    Optional<UUID> findAdvertiserIdByCampaign(UUID campaignId);
+    Optional<UUID> findBookingIdByCampaign(UUID campaignId);
 }

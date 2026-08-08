@@ -1,10 +1,12 @@
 package com.cscreativ.billboard.storage.api;
 
+import com.cscreativ.billboard.shared.AuthenticatedUser;
 import com.cscreativ.billboard.storage.api.mapper.StorageMapper;
 import com.cscreativ.billboard.storage.api.response.StoredFileResponse;
 import com.cscreativ.billboard.storage.application.StorageService;
 import com.cscreativ.billboard.storage.domain.StoredFile;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,9 +27,16 @@ public class StorageController {
         this.storageMapper = storageMapper;
     }
 
+    /**
+     * ownerId n'est pas un concept unique (voir StorageService) : selon l'appelant, c'est son
+     * userId, son advertiserId ou son ownerId propre — jamais celui d'un tiers. On vérifie donc
+     * qu'il correspond à l'un des identifiants connus de l'appelant plutôt qu'à un seul champ fixe.
+     */
     @PostMapping("/upload")
     public ResponseEntity<StoredFileResponse> uploadFile(@RequestParam("file") MultipartFile file,
-                                                         @RequestParam("ownerId") UUID ownerId) throws IOException {
+                                                         @RequestParam("ownerId") UUID ownerId,
+                                                         @AuthenticationPrincipal AuthenticatedUser currentUser) throws IOException {
+        currentUser.require(currentUser.isAdmin() || currentUser.isOneOfMine(ownerId));
         StoredFile storedFile = storageService.storeFileForOwner(
                 file.getOriginalFilename(),
                 file.getContentType(),
@@ -39,7 +48,9 @@ public class StorageController {
     }
 
     @GetMapping("/owner/{ownerId}")
-    public ResponseEntity<List<StoredFileResponse>> getOwnerFiles(@PathVariable UUID ownerId) {
+    public ResponseEntity<List<StoredFileResponse>> getOwnerFiles(@PathVariable UUID ownerId,
+                                                                   @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.require(currentUser.isAdmin() || currentUser.isOneOfMine(ownerId));
         List<StoredFileResponse> responses = storageService.getOwnerFiles(ownerId).stream()
                 .map(file -> storageMapper.toResponse(file, storageService.getFilePresignedUrl(file.getId())))
                 .collect(Collectors.toList());
@@ -47,7 +58,9 @@ public class StorageController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFile(@PathVariable UUID id, @RequestParam("ownerId") UUID ownerId) {
+    public ResponseEntity<Void> deleteFile(@PathVariable UUID id, @RequestParam("ownerId") UUID ownerId,
+                                            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.require(currentUser.isAdmin() || currentUser.isOneOfMine(ownerId));
         storageService.deleteOwnerFile(id, ownerId);
         return ResponseEntity.noContent().build();
     }

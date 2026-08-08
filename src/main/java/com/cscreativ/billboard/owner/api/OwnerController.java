@@ -6,7 +6,9 @@ import com.cscreativ.billboard.owner.api.request.UpdateRevenueShareRequest;
 import com.cscreativ.billboard.owner.api.response.BillboardOwnerResponse;
 import com.cscreativ.billboard.owner.application.OwnerService;
 import com.cscreativ.billboard.owner.domain.BillboardOwner;
+import com.cscreativ.billboard.shared.AuthenticatedUser;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +28,9 @@ public class OwnerController {
     }
 
     @PostMapping
-    public ResponseEntity<BillboardOwnerResponse> registerOwner(@RequestBody RegisterOwnerRequest request) {
+    public ResponseEntity<BillboardOwnerResponse> registerOwner(@RequestBody RegisterOwnerRequest request,
+                                                                 @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireSelfOrAdmin(request.userId());
         BillboardOwner owner = ownerService.registerOwner(
                 request.userId(),
                 request.companyName(),
@@ -39,13 +43,16 @@ public class OwnerController {
     }
 
     @PutMapping("/{id}/activate")
-    public ResponseEntity<Void> activateOwner(@PathVariable UUID id) {
+    public ResponseEntity<Void> activateOwner(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireAdmin();
         ownerService.activateOwner(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/revenue-share")
-    public ResponseEntity<Void> updateRevenueShareRate(@PathVariable UUID id, @RequestBody UpdateRevenueShareRequest request) {
+    public ResponseEntity<Void> updateRevenueShareRate(@PathVariable UUID id, @RequestBody UpdateRevenueShareRequest request,
+                                                        @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireAdmin();
         ownerService.updateRevenueShareRate(id, request.revenueShareRate());
         return ResponseEntity.noContent().build();
     }
@@ -57,7 +64,9 @@ public class OwnerController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<BillboardOwnerResponse> getOwnerByUserId(@PathVariable UUID userId) {
+    public ResponseEntity<BillboardOwnerResponse> getOwnerByUserId(@PathVariable UUID userId,
+                                                                    @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireSelfOrAdmin(userId);
         BillboardOwner owner = ownerService.getOwnerByUserId(userId);
         return ResponseEntity.ok(ownerMapper.toResponse(owner));
     }

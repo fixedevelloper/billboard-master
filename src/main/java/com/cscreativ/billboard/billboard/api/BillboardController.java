@@ -9,7 +9,9 @@ import com.cscreativ.billboard.billboard.api.response.BillboardResponse;
 import com.cscreativ.billboard.billboard.application.BillboardService;
 import com.cscreativ.billboard.billboard.domain.Billboard;
 import com.cscreativ.billboard.billboard.domain.BillboardImage;
+import com.cscreativ.billboard.shared.AuthenticatedUser;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,7 +31,9 @@ public class BillboardController {
     }
 
     @PostMapping
-    public ResponseEntity<BillboardResponse> createBillboard(@RequestBody CreateBillboardRequest request) {
+    public ResponseEntity<BillboardResponse> createBillboard(@RequestBody CreateBillboardRequest request,
+                                                              @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.require(currentUser.isAdmin() || currentUser.isOwner(request.ownerId()));
         Billboard billboard = billboardService.createBillboard(
                 request.title(),
                 request.description(),
@@ -69,7 +73,9 @@ public class BillboardController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BillboardResponse> updateBillboard(@PathVariable UUID id, @RequestBody UpdateBillboardRequest request) {
+    public ResponseEntity<BillboardResponse> updateBillboard(@PathVariable UUID id, @RequestBody UpdateBillboardRequest request,
+                                                              @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        requireOwnerOfBillboardOrAdmin(id, currentUser);
         Billboard billboard = billboardService.updateBillboard(
                 id,
                 request.title(),
@@ -88,13 +94,16 @@ public class BillboardController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBillboard(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteBillboard(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        requireOwnerOfBillboardOrAdmin(id, currentUser);
         billboardService.deleteBillboard(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/images")
-    public ResponseEntity<BillboardImageResponse> addImage(@PathVariable UUID id, @RequestBody AddBillboardImageRequest request) {
+    public ResponseEntity<BillboardImageResponse> addImage(@PathVariable UUID id, @RequestBody AddBillboardImageRequest request,
+                                                            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        requireOwnerOfBillboardOrAdmin(id, currentUser);
         BillboardImage image = billboardService.addImage(id, request.url());
         return ResponseEntity.ok(billboardMapper.toImageResponse(image));
     }
@@ -106,8 +115,15 @@ public class BillboardController {
     }
 
     @DeleteMapping("/{billboardId}/images/{imageId}")
-    public ResponseEntity<Void> removeImage(@PathVariable UUID billboardId, @PathVariable UUID imageId) {
+    public ResponseEntity<Void> removeImage(@PathVariable UUID billboardId, @PathVariable UUID imageId,
+                                             @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        requireOwnerOfBillboardOrAdmin(billboardId, currentUser);
         billboardService.removeImage(imageId);
         return ResponseEntity.noContent().build();
+    }
+
+    private void requireOwnerOfBillboardOrAdmin(UUID billboardId, AuthenticatedUser currentUser) {
+        Billboard billboard = billboardService.getBillboardById(billboardId);
+        currentUser.require(currentUser.isAdmin() || currentUser.isOwner(billboard.getOwnerId()));
     }
 }

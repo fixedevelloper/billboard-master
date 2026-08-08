@@ -30,9 +30,15 @@ public class SecurityConfiguration {
     public CorsConfigurationSource corsConfigurationSource(
             @Value("${app.cors.allowed-origins:http://localhost:3000}") String allowedOrigins) {
         CorsConfiguration configuration = new CorsConfiguration();
+        // Liste explicite d'origines (jamais "*") : requis pour pouvoir envoyer le cookie de
+        // session cross-origin (frontend :3000 / backend :8080) via allowCredentials.
         configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        // Le JWT voyage désormais dans un cookie HttpOnly (voir JwtTokenProvider) : le navigateur
+        // ne l'envoie en cross-origin que si la requête est faite avec credentials, et CORS ne
+        // laisse passer les credentials qu'avec une origine explicite (incompatible avec "*").
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

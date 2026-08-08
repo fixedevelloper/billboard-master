@@ -6,7 +6,9 @@ import com.cscreativ.billboard.mediabuyer.api.request.UpdateCreditLimitRequest;
 import com.cscreativ.billboard.mediabuyer.api.response.MediaBuyerResponse;
 import com.cscreativ.billboard.mediabuyer.application.MediaBuyerService;
 import com.cscreativ.billboard.mediabuyer.domain.MediaBuyer;
+import com.cscreativ.billboard.shared.AuthenticatedUser;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +28,9 @@ public class MediaBuyerController {
     }
 
     @PostMapping
-    public ResponseEntity<MediaBuyerResponse> registerBuyer(@RequestBody RegisterBuyerRequest request) {
+    public ResponseEntity<MediaBuyerResponse> registerBuyer(@RequestBody RegisterBuyerRequest request,
+                                                             @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireSelfOrAdmin(request.userId());
         MediaBuyer buyer = mediaBuyerService.registerBuyer(
                 request.userId(),
                 request.companyName(),
@@ -39,13 +43,16 @@ public class MediaBuyerController {
     }
 
     @PutMapping("/{id}/activate")
-    public ResponseEntity<Void> activateBuyer(@PathVariable UUID id) {
+    public ResponseEntity<Void> activateBuyer(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireAdmin();
         mediaBuyerService.activateBuyer(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/credit-limit")
-    public ResponseEntity<Void> updateCreditLimit(@PathVariable UUID id, @RequestBody UpdateCreditLimitRequest request) {
+    public ResponseEntity<Void> updateCreditLimit(@PathVariable UUID id, @RequestBody UpdateCreditLimitRequest request,
+                                                   @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireAdmin();
         mediaBuyerService.updateCreditLimit(id, request.creditLimit());
         return ResponseEntity.noContent().build();
     }
@@ -57,7 +64,9 @@ public class MediaBuyerController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<MediaBuyerResponse> getBuyerByUserId(@PathVariable UUID userId) {
+    public ResponseEntity<MediaBuyerResponse> getBuyerByUserId(@PathVariable UUID userId,
+                                                                @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireSelfOrAdmin(userId);
         MediaBuyer buyer = mediaBuyerService.getBuyerByUserId(userId);
         return ResponseEntity.ok(mediaBuyerMapper.toResponse(buyer));
     }

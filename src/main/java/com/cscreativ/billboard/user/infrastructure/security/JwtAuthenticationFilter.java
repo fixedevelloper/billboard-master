@@ -1,5 +1,6 @@
 package com.cscreativ.billboard.user.infrastructure.security;
 
+import com.cscreativ.billboard.shared.AuthenticatedUser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +14,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.UUID;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -32,8 +34,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (tokenProvider.validateToken(jwt) && SecurityContextHolder.getContext().getAuthentication() == null) {
                 try {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(tokenProvider.getEmailFromToken(jwt));
+                    AuthenticatedUser principal = new AuthenticatedUser(
+                            userDetails.getUsername(),
+                            userDetails.getAuthorities(),
+                            userDetails.isEnabled(),
+                            userDetails.isAccountNonExpired(),
+                            userDetails.isCredentialsNonExpired(),
+                            userDetails.isAccountNonLocked(),
+                            tokenProvider.getUserIdFromToken(jwt),
+                            parseUuid(tokenProvider.getClaim(jwt, "advertiserId")),
+                            parseUuid(tokenProvider.getClaim(jwt, "ownerId")),
+                            parseUuid(tokenProvider.getClaim(jwt, "mediaBuyerId")),
+                            parseUuid(tokenProvider.getClaim(jwt, "adminId"))
+                    );
                     UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                            new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } catch (UsernameNotFoundException e) {
@@ -44,19 +59,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    private static UUID parseUuid(String value) {
+        return value == null ? null : UUID.fromString(value);
+    }
+
     /**
-     * L'API EventSource du navigateur (flux SSE de la cloche de notification) ne permet pas
-     * de définir d'en-tête Authorization : on accepte donc, uniquement pour cette route, un
-     * jeton passé en paramètre de requête.
+     * Le JWT vit dans un cookie HttpOnly (voir JwtTokenProvider.COOKIE_NAME) : le frontend ne le
+     * manipule jamais en JS, ce qui inclut le flux SSE de la cloche de notification (EventSource
+     * envoie les cookies automatiquement avec withCredentials, plus besoin de le passer en query
+     * param où il finirait dans les logs d'accès / l'historique du navigateur).
+     * L'en-tête Authorization reste accepté en repli pour les clients non-navigateur (tests, CLI).
      */
     private String resolveToken(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
             return header.substring(7);
         }
-        if (request.getRequestURI().contains("/api/v1/notifications/stream/")) {
-            return request.getParameter("token");
-        }
-        return null;
+        return tokenProvider.extractTokenFromCookies(request);
     }
 }

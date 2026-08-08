@@ -5,10 +5,12 @@ import com.cscreativ.billboard.wallet.api.request.DepositRequest;
 import com.cscreativ.billboard.wallet.api.request.WithdrawRequest;
 import com.cscreativ.billboard.wallet.api.response.WalletResponse;
 import com.cscreativ.billboard.wallet.api.response.WalletTransactionResponse;
+import com.cscreativ.billboard.shared.AuthenticatedUser;
 import com.cscreativ.billboard.wallet.application.WalletService;
 import com.cscreativ.billboard.wallet.domain.Wallet;
 import com.cscreativ.billboard.wallet.domain.WalletTransaction;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,27 +30,35 @@ public class WalletController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<WalletResponse> getWallet(@PathVariable UUID userId, @RequestParam(defaultValue = "XOF") String currency) {
+    public ResponseEntity<WalletResponse> getWallet(@PathVariable UUID userId, @RequestParam(defaultValue = "XOF") String currency,
+                                                     @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireSelfOrAdmin(userId);
         Wallet wallet = walletService.getOrCreateWallet(userId, currency);
         return ResponseEntity.ok(walletMapper.toResponse(wallet));
     }
 
     @PostMapping("/user/{userId}/deposit")
-    public ResponseEntity<WalletResponse> deposit(@PathVariable UUID userId, @RequestBody DepositRequest request) {
+    public ResponseEntity<WalletResponse> deposit(@PathVariable UUID userId, @RequestBody DepositRequest request,
+                                                   @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireSelfOrAdmin(userId);
         walletService.deposit(userId, request.amount(), request.currency(), request.reference());
         Wallet wallet = walletService.getWalletByUserId(userId);
         return ResponseEntity.ok(walletMapper.toResponse(wallet));
     }
 
     @PostMapping("/user/{userId}/withdraw")
-    public ResponseEntity<WalletResponse> withdraw(@PathVariable UUID userId, @RequestBody WithdrawRequest request) {
+    public ResponseEntity<WalletResponse> withdraw(@PathVariable UUID userId, @RequestBody WithdrawRequest request,
+                                                    @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireSelfOrAdmin(userId);
         walletService.withdraw(userId, request.amount(), request.currency(), request.reference());
         Wallet wallet = walletService.getWalletByUserId(userId);
         return ResponseEntity.ok(walletMapper.toResponse(wallet));
     }
 
     @GetMapping("/user/{userId}/transactions")
-    public ResponseEntity<List<WalletTransactionResponse>> getTransactions(@PathVariable UUID userId) {
+    public ResponseEntity<List<WalletTransactionResponse>> getTransactions(@PathVariable UUID userId,
+                                                                            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireSelfOrAdmin(userId);
         List<WalletTransaction> transactions = walletService.getTransactions(userId);
         return ResponseEntity.ok(transactions.stream().map(walletMapper::toResponse).collect(Collectors.toList()));
     }

@@ -5,7 +5,9 @@ import com.cscreativ.billboard.city.api.request.CreateCityRequest;
 import com.cscreativ.billboard.city.api.response.CityResponse;
 import com.cscreativ.billboard.city.application.CityService;
 import com.cscreativ.billboard.city.domain.City;
+import com.cscreativ.billboard.shared.AuthenticatedUser;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,7 +27,9 @@ public class CityController {
     }
 
     @PostMapping
-    public ResponseEntity<CityResponse> createCity(@RequestBody CreateCityRequest request) {
+    public ResponseEntity<CityResponse> createCity(@RequestBody CreateCityRequest request,
+                                                    @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireAdmin();
         City city = cityService.createCity(request.name(), request.country(), request.latitude(), request.longitude());
         return ResponseEntity.ok(cityMapper.toResponse(city));
     }
@@ -42,13 +46,16 @@ public class CityController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CityResponse> updateCity(@PathVariable UUID id, @RequestBody CreateCityRequest request) {
+    public ResponseEntity<CityResponse> updateCity(@PathVariable UUID id, @RequestBody CreateCityRequest request,
+                                                    @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireAdmin();
         City city = cityService.updateCity(id, request.name(), request.country(), request.latitude(), request.longitude());
         return ResponseEntity.ok(cityMapper.toResponse(city));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCity(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteCity(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireAdmin();
         cityService.deleteCity(id);
         return ResponseEntity.noContent().build();
     }

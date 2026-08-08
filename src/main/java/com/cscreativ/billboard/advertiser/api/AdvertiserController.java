@@ -5,7 +5,9 @@ import com.cscreativ.billboard.advertiser.api.request.RegisterAdvertiserRequest;
 import com.cscreativ.billboard.advertiser.api.response.AdvertiserResponse;
 import com.cscreativ.billboard.advertiser.application.AdvertiserService;
 import com.cscreativ.billboard.advertiser.domain.Advertiser;
+import com.cscreativ.billboard.shared.AuthenticatedUser;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,7 +27,9 @@ public class AdvertiserController {
     }
 
     @PostMapping
-    public ResponseEntity<AdvertiserResponse> registerAdvertiser(@RequestBody RegisterAdvertiserRequest request) {
+    public ResponseEntity<AdvertiserResponse> registerAdvertiser(@RequestBody RegisterAdvertiserRequest request,
+                                                                  @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireSelfOrAdmin(request.userId());
         Advertiser advertiser = advertiserService.registerAdvertiser(
                 request.userId(),
                 request.companyName(),
@@ -43,7 +47,8 @@ public class AdvertiserController {
     }
 
     @PutMapping("/{id}/verify")
-    public ResponseEntity<Void> verifyAdvertiser(@PathVariable UUID id) {
+    public ResponseEntity<Void> verifyAdvertiser(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireAdmin();
         advertiserService.verifyAdvertiser(id);
         return ResponseEntity.noContent().build();
     }

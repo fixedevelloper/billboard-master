@@ -1,12 +1,16 @@
 package com.cscreativ.billboard.campaign.api;
 
+import com.cscreativ.billboard.billboard.BillboardFacade;
+import com.cscreativ.billboard.booking.BookingFacade;
 import com.cscreativ.billboard.campaign.api.mapper.CampaignMapper;
 import com.cscreativ.billboard.campaign.api.request.CreateCampaignRequest;
 import com.cscreativ.billboard.campaign.api.request.RejectCampaignRequest;
 import com.cscreativ.billboard.campaign.api.response.CampaignResponse;
 import com.cscreativ.billboard.campaign.application.CampaignService;
 import com.cscreativ.billboard.campaign.domain.Campaign;
+import com.cscreativ.billboard.shared.AuthenticatedUser;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,14 +23,21 @@ public class CampaignController {
 
     private final CampaignService campaignService;
     private final CampaignMapper campaignMapper;
+    private final BookingFacade bookingFacade;
+    private final BillboardFacade billboardFacade;
 
-    public CampaignController(CampaignService campaignService, CampaignMapper campaignMapper) {
+    public CampaignController(CampaignService campaignService, CampaignMapper campaignMapper,
+                               BookingFacade bookingFacade, BillboardFacade billboardFacade) {
         this.campaignService = campaignService;
         this.campaignMapper = campaignMapper;
+        this.bookingFacade = bookingFacade;
+        this.billboardFacade = billboardFacade;
     }
 
     @PostMapping
-    public ResponseEntity<CampaignResponse> createCampaign(@RequestBody CreateCampaignRequest request) {
+    public ResponseEntity<CampaignResponse> createCampaign(@RequestBody CreateCampaignRequest request,
+                                                            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.require(currentUser.isAdmin() || currentUser.isAdvertiser(request.advertiserId()));
         Campaign campaign = campaignService.createCampaign(
                 request.bookingId(),
                 request.advertiserId(),
@@ -40,44 +51,77 @@ public class CampaignController {
     }
 
     @PostMapping("/{id}/submit")
-    public ResponseEntity<Void> submitCampaign(@PathVariable UUID id) {
+    public ResponseEntity<Void> submitCampaign(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        Campaign campaign = campaignService.getCampaignById(id);
+        currentUser.require(currentUser.isAdmin() || currentUser.isAdvertiser(campaign.getAdvertiserId()));
         campaignService.submitCampaign(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/approve")
-    public ResponseEntity<Void> approveCampaign(@PathVariable UUID id) {
+    public ResponseEntity<Void> approveCampaign(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        requireOwnerOfCampaignBillboardOrAdmin(campaignService.getCampaignById(id), currentUser);
         campaignService.approveCampaign(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/reject")
-    public ResponseEntity<Void> rejectCampaign(@PathVariable UUID id, @RequestBody RejectCampaignRequest request) {
+    public ResponseEntity<Void> rejectCampaign(@PathVariable UUID id, @RequestBody RejectCampaignRequest request,
+                                                @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        requireOwnerOfCampaignBillboardOrAdmin(campaignService.getCampaignById(id), currentUser);
         campaignService.rejectCampaign(id, request.reason());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CampaignResponse> getCampaignById(@PathVariable UUID id) {
+    public ResponseEntity<CampaignResponse> getCampaignById(@PathVariable UUID id,
+                                                             @AuthenticationPrincipal AuthenticatedUser currentUser) {
         Campaign campaign = campaignService.getCampaignById(id);
+        requirePartyToCampaignOrAdmin(campaign, currentUser);
         return ResponseEntity.ok(campaignMapper.toResponse(campaign));
     }
 
     @GetMapping("/advertiser/{advertiserId}")
-    public ResponseEntity<List<CampaignResponse>> getCampaignsByAdvertiser(@PathVariable UUID advertiserId) {
+    public ResponseEntity<List<CampaignResponse>> getCampaignsByAdvertiser(@PathVariable UUID advertiserId,
+                                                                            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.require(currentUser.isAdmin() || currentUser.isAdvertiser(advertiserId));
         List<Campaign> campaigns = campaignService.getCampaignsByAdvertiser(advertiserId);
         return ResponseEntity.ok(campaigns.stream().map(campaignMapper::toResponse).collect(Collectors.toList()));
     }
 
     @GetMapping("/booking/{bookingId}")
-    public ResponseEntity<List<CampaignResponse>> getCampaignsByBooking(@PathVariable UUID bookingId) {
+    public ResponseEntity<List<CampaignResponse>> getCampaignsByBooking(@PathVariable UUID bookingId,
+                                                                         @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        UUID advertiserId = bookingFacade.findAdvertiserIdByBooking(bookingId).orElse(null);
+        UUID billboardId = bookingFacade.findBillboardIdByBooking(bookingId).orElse(null);
+        UUID ownerId = billboardId == null ? null : billboardFacade.findOwnerIdByBillboard(billboardId).orElse(null);
+        currentUser.require(currentUser.isAdmin() || currentUser.isAdvertiser(advertiserId) || currentUser.isOwner(ownerId));
         List<Campaign> campaigns = campaignService.getCampaignsByBooking(bookingId);
         return ResponseEntity.ok(campaigns.stream().map(campaignMapper::toResponse).collect(Collectors.toList()));
     }
 
     @GetMapping
-    public ResponseEntity<List<CampaignResponse>> getAllCampaigns() {
+    public ResponseEntity<List<CampaignResponse>> getAllCampaigns(@AuthenticationPrincipal AuthenticatedUser currentUser) {
+        currentUser.requireAdmin();
         List<Campaign> campaigns = campaignService.getAllCampaigns();
         return ResponseEntity.ok(campaigns.stream().map(campaignMapper::toResponse).collect(Collectors.toList()));
+    }
+
+    private void requirePartyToCampaignOrAdmin(Campaign campaign, AuthenticatedUser currentUser) {
+        if (currentUser.isAdmin() || currentUser.isAdvertiser(campaign.getAdvertiserId())) {
+            return;
+        }
+        UUID billboardId = bookingFacade.findBillboardIdByBooking(campaign.getBookingId()).orElse(null);
+        UUID ownerId = billboardId == null ? null : billboardFacade.findOwnerIdByBillboard(billboardId).orElse(null);
+        currentUser.require(currentUser.isOwner(ownerId));
+    }
+
+    private void requireOwnerOfCampaignBillboardOrAdmin(Campaign campaign, AuthenticatedUser currentUser) {
+        if (currentUser.isAdmin()) {
+            return;
+        }
+        UUID billboardId = bookingFacade.findBillboardIdByBooking(campaign.getBookingId()).orElse(null);
+        UUID ownerId = billboardId == null ? null : billboardFacade.findOwnerIdByBillboard(billboardId).orElse(null);
+        currentUser.require(currentUser.isOwner(ownerId));
     }
 }

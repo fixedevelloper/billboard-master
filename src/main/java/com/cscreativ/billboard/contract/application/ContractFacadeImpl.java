@@ -36,4 +36,14 @@ public class ContractFacadeImpl implements ContractFacade {
                 .map(c -> c.getStatus() == ContractStatus.SIGNED)
                 .orElse(false);
     }
+
+    @Override
+    public Optional<UUID> findOwnerIdByBooking(UUID bookingId) {
+        return contractRepository.findByBookingId(bookingId).map(Contract::getOwnerId);
+    }
+
+    @Override
+    public Optional<UUID> findAdvertiserIdByBooking(UUID bookingId) {
+        return contractRepository.findByBookingId(bookingId).map(Contract::getAdvertiserId);
+    }
 }

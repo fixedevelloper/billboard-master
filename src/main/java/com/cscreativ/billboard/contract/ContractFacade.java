@@ -9,4 +9,6 @@ public interface ContractFacade {
     Optional<Contract> findContractById(UUID contractId);
     boolean isSignedByAllParties(UUID contractId);
     boolean isSignedForBooking(UUID bookingId);
+    Optional<UUID> findOwnerIdByBooking(UUID bookingId);
+    Optional<UUID> findAdvertiserIdByBooking(UUID bookingId);
 }
