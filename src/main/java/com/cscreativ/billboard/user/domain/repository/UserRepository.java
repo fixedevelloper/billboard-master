@@ -11,6 +11,7 @@ public interface UserRepository {
     User save(User user);
     Optional<User> findById(UUID id);
     Optional<User> findByEmail(Email email);
+    Optional<User> findByVerificationToken(String verificationToken);
     boolean existsByEmail(Email email);
     List<User> findAll();
 }

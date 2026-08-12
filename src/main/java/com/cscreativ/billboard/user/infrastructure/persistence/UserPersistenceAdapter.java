@@ -43,6 +43,11 @@ public class UserPersistenceAdapter implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByVerificationToken(String verificationToken) {
+        return userJpaRepository.findByVerificationToken(verificationToken).map(this::toDomain);
+    }
+
+    @Override
     public boolean existsByEmail(Email email) {
         return userJpaRepository.existsByEmail(email.getValue());
     }
@@ -61,6 +66,8 @@ public class UserPersistenceAdapter implements UserRepository {
         entity.setLastName(domain.getFullName().getLastName());
         entity.setPhoneNumber(domain.getPhoneNumber() != null ? domain.getPhoneNumber().getValue() : null);
         entity.setStatus(domain.getStatus());
+        entity.setVerificationToken(domain.getVerificationToken());
+        entity.setVerificationTokenExpiresAt(domain.getVerificationTokenExpiresAt());
         entity.setRoles(domain.getRoles() != null ? domain.getRoles().stream().map(this::toRoleEntity).collect(Collectors.toSet()) : Set.of());
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setUpdatedAt(domain.getUpdatedAt());
@@ -84,7 +91,9 @@ public class UserPersistenceAdapter implements UserRepository {
                 entity.getStatus(),
                 entity.getRoles() != null ? entity.getRoles().stream().map(this::toRoleDomain).collect(Collectors.toSet()) : Set.of(),
                 entity.getCreatedAt(),
-                entity.getUpdatedAt()
+                entity.getUpdatedAt(),
+                entity.getVerificationToken(),
+                entity.getVerificationTokenExpiresAt()
         );
     }
 

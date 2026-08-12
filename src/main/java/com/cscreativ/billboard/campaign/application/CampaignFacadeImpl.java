@@ -14,9 +14,11 @@ import java.util.UUID;
 public class CampaignFacadeImpl implements CampaignFacade {
 
     private final CampaignRepository campaignRepository;
+    private final CampaignService campaignService;
 
-    public CampaignFacadeImpl(CampaignRepository campaignRepository) {
+    public CampaignFacadeImpl(CampaignRepository campaignRepository, CampaignService campaignService) {
         this.campaignRepository = campaignRepository;
+        this.campaignService = campaignService;
     }
 
     @Override
@@ -46,5 +48,10 @@ public class CampaignFacadeImpl implements CampaignFacade {
     @Override
     public Optional<UUID> findBookingIdByCampaign(UUID campaignId) {
         return campaignRepository.findById(campaignId).map(Campaign::getBookingId);
+    }
+
+    @Override
+    public void activateCampaign(UUID campaignId) {
+        campaignService.activateCampaign(campaignId);
     }
 }

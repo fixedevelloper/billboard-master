@@ -3,9 +3,12 @@ package com.cscreativ.billboard.user.api;
 import com.cscreativ.billboard.user.api.mapper.UserMapper;
 import com.cscreativ.billboard.user.api.request.LoginRequest;
 import com.cscreativ.billboard.user.api.request.RegisterRequest;
+import com.cscreativ.billboard.user.api.request.ResendVerificationRequest;
+import com.cscreativ.billboard.user.api.request.VerifyEmailRequest;
 import com.cscreativ.billboard.user.api.response.LoginResponse;
 import com.cscreativ.billboard.user.api.response.UserResponse;
 import com.cscreativ.billboard.user.application.AuthenticationService;
+import com.cscreativ.billboard.user.application.EmailVerificationService;
 import com.cscreativ.billboard.user.application.RegistrationService;
 import com.cscreativ.billboard.user.domain.User;
 import com.cscreativ.billboard.user.infrastructure.security.JwtTokenProvider;
@@ -25,15 +28,18 @@ public class AuthController {
 
     private final RegistrationService registrationService;
     private final AuthenticationService authenticationService;
+    private final EmailVerificationService emailVerificationService;
     private final UserMapper userMapper;
     private final JwtTokenProvider tokenProvider;
 
     public AuthController(RegistrationService registrationService,
                            AuthenticationService authenticationService,
+                           EmailVerificationService emailVerificationService,
                            UserMapper userMapper,
                            JwtTokenProvider tokenProvider) {
         this.registrationService = registrationService;
         this.authenticationService = authenticationService;
+        this.emailVerificationService = emailVerificationService;
         this.userMapper = userMapper;
         this.tokenProvider = tokenProvider;
     }
@@ -48,6 +54,22 @@ public class AuthController {
                 request.phoneNumber()
         );
         return ResponseEntity.ok(userMapper.toUserResponse(user));
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<Void> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        emailVerificationService.verifyEmail(request.token());
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Ne révèle jamais si l'adresse existe déjà ou est déjà vérifiée : toujours 204, pour ne pas
+     * servir d'oracle à l'énumération de comptes (voir EmailVerificationService.resendVerification).
+     */
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Void> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
+        emailVerificationService.resendVerification(request.email());
+        return ResponseEntity.noContent().build();
     }
 
     /**

@@ -60,6 +60,7 @@ public class RegistrationService {
                 savedUser.getEmail().getValue(),
                 savedUser.getFullName().getFirstName(),
                 savedUser.getFullName().getLastName(),
+                savedUser.getVerificationToken(),
                 LocalDateTime.now()
         ));
 

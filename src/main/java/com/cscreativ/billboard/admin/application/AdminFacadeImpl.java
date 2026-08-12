@@ -40,6 +40,13 @@ public class AdminFacadeImpl implements AdminFacade {
     }
 
     @Override
+    public Set<String> findRoleNamesByUserId(UUID userId) {
+        return adminRepository.findAdminByUserId(userId)
+                .map(admin -> admin.getRoles().stream().map(AdminRole::name).collect(Collectors.toSet()))
+                .orElse(Set.of());
+    }
+
+    @Override
     public UUID createAdmin(UUID userId, Set<String> roleNames) {
         Set<AdminRole> roles = roleNames.stream().map(AdminRole::valueOf).collect(Collectors.toSet());
         return adminService.createAdmin(userId, roles).getId();

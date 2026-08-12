@@ -2,10 +2,13 @@ package com.cscreativ.billboard.campaign.application;
 
 import com.cscreativ.billboard.advertiser.AdvertiserFacade;
 import com.cscreativ.billboard.campaign.domain.Campaign;
+import com.cscreativ.billboard.campaign.domain.CampaignStatus;
 import com.cscreativ.billboard.campaign.domain.exception.CampaignNotFoundException;
 import com.cscreativ.billboard.campaign.domain.repository.CampaignRepository;
 import com.cscreativ.billboard.campaign.domain.valueobject.MediaAsset;
+import com.cscreativ.billboard.campaign.events.CampaignActivatedEvent;
 import com.cscreativ.billboard.campaign.events.CampaignApprovedEvent;
+import com.cscreativ.billboard.campaign.events.CampaignCompletedEvent;
 import com.cscreativ.billboard.campaign.events.CampaignRejectedEvent;
 import com.cscreativ.billboard.campaign.events.CampaignSubmittedEvent;
 import com.cscreativ.billboard.notification.NotificationFacade;
@@ -94,6 +97,48 @@ public class CampaignService {
         params.put("Campagne", campaign.getName());
         params.put("Motif", reason);
         notifyAdvertiser(campaign, "CAMPAIGN_REJECTED", params);
+    }
+
+    /**
+     * Appelée par CampaignFacade.activateCampaign (installation.application.InstallationService,
+     * à la fin de la pose physique du visuel). Ignore silencieusement (log) une campagne qui n'est
+     * pas APPROVED plutôt que de lever une exception qui ferait échouer la complétion de la tâche
+     * d'installation elle-même.
+     */
+    @Transactional
+    public void activateCampaign(UUID campaignId) {
+        Campaign campaign = getCampaignById(campaignId);
+        if (campaign.getStatus() != CampaignStatus.APPROVED) {
+            log.warn("Installation complétée pour la campagne {} (statut {}) : activation ignorée, statut inattendu",
+                    campaignId, campaign.getStatus());
+            return;
+        }
+        campaign.activate();
+        campaignRepository.save(campaign);
+
+        eventPublisher.publishEvent(new CampaignActivatedEvent(campaign.getId(), campaign.getBookingId(), LocalDateTime.now()));
+
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("Campagne", campaign.getName());
+        notifyAdvertiser(campaign, "CAMPAIGN_ACTIVE", params);
+    }
+
+    /** Déclenchée par CampaignCompletionScheduler une fois la période de réservation écoulée. */
+    @Transactional
+    public void completeCampaign(UUID campaignId) {
+        Campaign campaign = getCampaignById(campaignId);
+        campaign.complete();
+        campaignRepository.save(campaign);
+
+        eventPublisher.publishEvent(new CampaignCompletedEvent(campaign.getId(), campaign.getBookingId(), LocalDateTime.now()));
+
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("Campagne", campaign.getName());
+        notifyAdvertiser(campaign, "CAMPAIGN_COMPLETED", params);
+    }
+
+    public List<Campaign> getCampaignsByStatus(CampaignStatus status) {
+        return campaignRepository.findByStatus(status);
     }
 
     private void notifyAdvertiser(Campaign campaign, String templateCode, Map<String, String> params) {

@@ -26,10 +26,18 @@ public class AdvertiserController {
         this.advertiserMapper = advertiserMapper;
     }
 
+    /**
+     * Public (voir SecurityConfiguration) : appelé juste après /auth/register, avant toute
+     * connexion, donc sans JWT — currentUser est alors null. Le contrôle self-or-admin ne
+     * s'applique que si l'appelant est déjà authentifié (ex. become-advertiser depuis un compte
+     * existant, ou un admin créant le profil pour quelqu'un d'autre).
+     */
     @PostMapping
     public ResponseEntity<AdvertiserResponse> registerAdvertiser(@RequestBody RegisterAdvertiserRequest request,
                                                                   @AuthenticationPrincipal AuthenticatedUser currentUser) {
-        currentUser.requireSelfOrAdmin(request.userId());
+        if (currentUser != null) {
+            currentUser.requireSelfOrAdmin(request.userId());
+        }
         Advertiser advertiser = advertiserService.registerAdvertiser(
                 request.userId(),
                 request.companyName(),

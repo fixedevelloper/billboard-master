@@ -12,6 +12,13 @@ public interface AdminFacade {
     boolean hasRole(UUID adminId, String roleName);
 
     /**
+     * Noms de rôles (String, pas AdminRole) pour la même raison que createAdmin : embarqués tels
+     * quels dans le claim JWT "adminRoles" à la connexion (voir AuthenticationService.login).
+     * Ensemble vide si l'utilisateur n'est pas admin.
+     */
+    Set<String> findRoleNamesByUserId(UUID userId);
+
+    /**
      * roleNames en String (pas AdminRole) : le type domain n'est pas exposé hors du module.
      * Utilisé par le bootstrap du compte admin (AdminAccountInitializer).
      */

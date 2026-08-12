@@ -1,5 +1,6 @@
 package com.cscreativ.billboard.installation.application;
 
+import com.cscreativ.billboard.campaign.CampaignFacade;
 import com.cscreativ.billboard.installation.domain.InstallationTask;
 import com.cscreativ.billboard.installation.domain.exception.InstallationTaskNotFoundException;
 import com.cscreativ.billboard.installation.domain.repository.InstallationTaskRepository;
@@ -18,10 +19,13 @@ public class InstallationService {
 
     private final InstallationTaskRepository taskRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final CampaignFacade campaignFacade;
 
-    public InstallationService(InstallationTaskRepository taskRepository, ApplicationEventPublisher eventPublisher) {
+    public InstallationService(InstallationTaskRepository taskRepository, ApplicationEventPublisher eventPublisher,
+                                CampaignFacade campaignFacade) {
         this.taskRepository = taskRepository;
         this.eventPublisher = eventPublisher;
+        this.campaignFacade = campaignFacade;
     }
 
     @Transactional
@@ -47,6 +51,9 @@ public class InstallationService {
         InstallationTask saved = taskRepository.save(task);
 
         eventPublisher.publishEvent(new InstallationCompletedEvent(saved.getId(), saved.getCampaignId(), saved.getBillboardId(), photoUrl, LocalDateTime.now()));
+
+        // La pose physique du visuel est le signal métier qui fait passer la campagne à ACTIVE.
+        campaignFacade.activateCampaign(saved.getCampaignId());
     }
 
     public InstallationTask getTaskById(UUID id) {

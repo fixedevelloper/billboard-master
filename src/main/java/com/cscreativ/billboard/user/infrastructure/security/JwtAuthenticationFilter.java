@@ -14,7 +14,10 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.Arrays;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -45,7 +48,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             parseUuid(tokenProvider.getClaim(jwt, "advertiserId")),
                             parseUuid(tokenProvider.getClaim(jwt, "ownerId")),
                             parseUuid(tokenProvider.getClaim(jwt, "mediaBuyerId")),
-                            parseUuid(tokenProvider.getClaim(jwt, "adminId"))
+                            parseUuid(tokenProvider.getClaim(jwt, "adminId")),
+                            parseRoles(tokenProvider.getClaim(jwt, "adminRoles"))
                     );
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
@@ -61,6 +65,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static UUID parseUuid(String value) {
         return value == null ? null : UUID.fromString(value);
+    }
+
+    private static Set<String> parseRoles(String value) {
+        return value == null || value.isBlank()
+                ? Set.of()
+                : Arrays.stream(value.split(",")).collect(Collectors.toSet());
     }
 
     /**

@@ -8,5 +8,6 @@ public record UserRegisteredEvent(
         String email,
         String firstName,
         String lastName,
+        String verificationToken,
         LocalDateTime occurredOn
 ) {}

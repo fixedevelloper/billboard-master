@@ -5,8 +5,11 @@ import com.cscreativ.billboard.advertiser.AdvertiserFacade;
 import com.cscreativ.billboard.mediabuyer.MediaBuyerFacade;
 import com.cscreativ.billboard.owner.OwnerFacade;
 import com.cscreativ.billboard.user.domain.User;
+import com.cscreativ.billboard.user.domain.UserStatus;
 import com.cscreativ.billboard.user.domain.exception.InvalidPasswordException;
+import com.cscreativ.billboard.user.domain.exception.UserDisabledException;
 import com.cscreativ.billboard.user.domain.exception.UserNotFoundException;
+import com.cscreativ.billboard.user.domain.exception.UserNotVerifiedException;
 import com.cscreativ.billboard.user.domain.repository.UserRepository;
 import com.cscreativ.billboard.user.domain.valueobject.Email;
 import com.cscreativ.billboard.user.events.UserLoggedInEvent;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Chaque profil métier (annonceur, propriétaire, media buyer, admin) est rattaché à un
@@ -62,6 +66,13 @@ public class AuthenticationService {
             throw new InvalidPasswordException("Identifiants invalides");
         }
 
+        if (user.getStatus() == UserStatus.PENDING_VERIFICATION) {
+            throw new UserNotVerifiedException();
+        }
+        if (user.getStatus() == UserStatus.DISABLED || user.getStatus() == UserStatus.SUSPENDED) {
+            throw new UserDisabledException("Votre compte est désactivé. Contactez le support.");
+        }
+
         eventPublisher.publishEvent(new UserLoggedInEvent(user.getId(), LocalDateTime.now()));
 
         Map<String, String> profileClaims = new LinkedHashMap<>();
@@ -73,6 +84,10 @@ public class AuthenticationService {
                 .ifPresent(id -> profileClaims.put("mediaBuyerId", id.toString()));
         adminFacade.findAdminIdByUserId(user.getId())
                 .ifPresent(id -> profileClaims.put("adminId", id.toString()));
+        Set<String> adminRoles = adminFacade.findRoleNamesByUserId(user.getId());
+        if (!adminRoles.isEmpty()) {
+            profileClaims.put("adminRoles", String.join(",", adminRoles));
+        }
 
         return jwtService.generateAccessToken(user.getId(), user.getEmail().getValue(), profileClaims);
     }

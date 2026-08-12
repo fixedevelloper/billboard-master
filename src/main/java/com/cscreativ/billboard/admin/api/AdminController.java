@@ -29,10 +29,15 @@ public class AdminController {
         this.adminMapper = adminMapper;
     }
 
+    /**
+     * Seul un SUPER_ADMIN peut créer d'autres comptes admin (et donc leur attribuer n'importe
+     * quel rôle, y compris SUPER_ADMIN) : sans cette restriction, un admin MODERATOR/SUPPORT/
+     * FINANCE pourrait s'auto-élever ou créer des comptes à privilèges illimités.
+     */
     @PostMapping
     public ResponseEntity<AdminResponse> createAdmin(@RequestBody CreateAdminRequest request,
                                                       @AuthenticationPrincipal AuthenticatedUser currentUser) {
-        currentUser.requireAdmin();
+        currentUser.requireAdminRole("SUPER_ADMIN");
         AdminUser admin = adminService.createAdmin(request.userId(), request.roles());
         return ResponseEntity.ok(adminMapper.toResponse(admin));
     }

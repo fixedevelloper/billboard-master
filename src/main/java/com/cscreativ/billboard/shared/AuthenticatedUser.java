@@ -5,6 +5,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -24,6 +25,7 @@ public class AuthenticatedUser extends User {
     private final UUID ownerId;
     private final UUID mediaBuyerId;
     private final UUID adminId;
+    private final Set<String> adminRoles;
 
     public AuthenticatedUser(String email,
                               Collection<? extends GrantedAuthority> authorities,
@@ -35,13 +37,15 @@ public class AuthenticatedUser extends User {
                               UUID advertiserId,
                               UUID ownerId,
                               UUID mediaBuyerId,
-                              UUID adminId) {
+                              UUID adminId,
+                              Set<String> adminRoles) {
         super(email, "", enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
         this.userId = userId;
         this.advertiserId = advertiserId;
         this.ownerId = ownerId;
         this.mediaBuyerId = mediaBuyerId;
         this.adminId = adminId;
+        this.adminRoles = adminRoles != null ? adminRoles : Set.of();
     }
 
     public UUID getUserId() {
@@ -66,6 +70,11 @@ public class AuthenticatedUser extends User {
 
     public boolean isAdmin() {
         return adminId != null;
+    }
+
+    /** Noms de rôle bruts (ex. "SUPER_ADMIN") : voir AdminFacade#findRoleNamesByUserId. */
+    public boolean hasAdminRole(String roleName) {
+        return adminId != null && adminRoles.contains(roleName);
     }
 
     public boolean isSelf(UUID otherUserId) {
@@ -97,6 +106,10 @@ public class AuthenticatedUser extends User {
 
     public void requireAdmin() {
         require(isAdmin());
+    }
+
+    public void requireAdminRole(String roleName) {
+        require(hasAdminRole(roleName));
     }
 
     public void requireSelfOrAdmin(UUID otherUserId) {

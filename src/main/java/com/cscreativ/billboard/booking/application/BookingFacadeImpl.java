@@ -38,4 +38,9 @@ public class BookingFacadeImpl implements BookingFacade {
     public Optional<UUID> findAdvertiserIdByBooking(UUID bookingId) {
         return bookingRepository.findById(bookingId).map(Booking::getAdvertiserId);
     }
+
+    @Override
+    public Optional<LocalDate> findPeriodEndDateByBooking(UUID bookingId) {
+        return bookingRepository.findById(bookingId).map(booking -> booking.getPeriod().getEndDate());
+    }
 }

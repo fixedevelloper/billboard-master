@@ -63,6 +63,24 @@ public class Campaign {
         this.updatedAt = LocalDateTime.now();
     }
 
+    /** Déclenché par la pose physique du visuel (voir InstallationEventListener). */
+    public void activate() {
+        if (this.status != CampaignStatus.APPROVED) {
+            throw new IllegalStateException("Seule une campagne approuvée peut être activée");
+        }
+        this.status = CampaignStatus.ACTIVE;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /** Déclenché par le passage de la date de fin de la réservation (voir CampaignCompletionScheduler). */
+    public void complete() {
+        if (this.status != CampaignStatus.ACTIVE) {
+            throw new IllegalStateException("Seule une campagne active peut être terminée");
+        }
+        this.status = CampaignStatus.COMPLETED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public UUID getId() { return id; }
     public UUID getBookingId() { return bookingId; }
     public UUID getAdvertiserId() { return advertiserId; }

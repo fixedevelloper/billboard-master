@@ -24,7 +24,10 @@ public class UserEntity {
     
     @Enumerated(EnumType.STRING)
     private UserStatus status;
-    
+
+    private String verificationToken;
+    private LocalDateTime verificationTokenExpiresAt;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "user_roles",
@@ -50,6 +53,10 @@ public class UserEntity {
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
     public UserStatus getStatus() { return status; }
     public void setStatus(UserStatus status) { this.status = status; }
+    public String getVerificationToken() { return verificationToken; }
+    public void setVerificationToken(String verificationToken) { this.verificationToken = verificationToken; }
+    public LocalDateTime getVerificationTokenExpiresAt() { return verificationTokenExpiresAt; }
+    public void setVerificationTokenExpiresAt(LocalDateTime verificationTokenExpiresAt) { this.verificationTokenExpiresAt = verificationTokenExpiresAt; }
     public Set<RoleEntity> getRoles() { return roles; }
     public void setRoles(Set<RoleEntity> roles) { this.roles = roles; }
     public LocalDateTime getCreatedAt() { return createdAt; }
