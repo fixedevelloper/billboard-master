@@ -1,6 +1,8 @@
 package com.cscreativ.billboard.wallet.domain.exception;
 
-public class InsufficientBalanceException extends RuntimeException {
+import com.cscreativ.billboard.shared.domain.exception.BusinessException;
+
+public class InsufficientBalanceException extends BusinessException {
     public InsufficientBalanceException(String message) {
         super(message);
     }

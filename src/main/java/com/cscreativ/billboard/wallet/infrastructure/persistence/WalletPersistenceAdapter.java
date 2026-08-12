@@ -33,6 +33,11 @@ public class WalletPersistenceAdapter implements WalletRepository {
         return jpaRepository.findByUserId(userId).map(this::toDomain);
     }
 
+    @Override
+    public Optional<Wallet> findByUserIdForUpdate(UUID userId) {
+        return jpaRepository.findByUserIdForUpdate(userId).map(this::toDomain);
+    }
+
     private WalletEntity toEntity(Wallet domain) {
         WalletEntity entity = new WalletEntity();
         entity.setId(domain.getId());

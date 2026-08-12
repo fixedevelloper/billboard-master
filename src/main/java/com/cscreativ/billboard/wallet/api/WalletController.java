@@ -1,8 +1,6 @@
 package com.cscreativ.billboard.wallet.api;
 
 import com.cscreativ.billboard.wallet.api.mapper.WalletMapper;
-import com.cscreativ.billboard.wallet.api.request.DepositRequest;
-import com.cscreativ.billboard.wallet.api.request.WithdrawRequest;
 import com.cscreativ.billboard.wallet.api.response.WalletResponse;
 import com.cscreativ.billboard.wallet.api.response.WalletTransactionResponse;
 import com.cscreativ.billboard.shared.AuthenticatedUser;
@@ -37,24 +35,11 @@ public class WalletController {
         return ResponseEntity.ok(walletMapper.toResponse(wallet));
     }
 
-    @PostMapping("/user/{userId}/deposit")
-    public ResponseEntity<WalletResponse> deposit(@PathVariable UUID userId, @RequestBody DepositRequest request,
-                                                   @AuthenticationPrincipal AuthenticatedUser currentUser) {
-        currentUser.requireSelfOrAdmin(userId);
-        walletService.deposit(userId, request.amount(), request.currency(), request.reference());
-        Wallet wallet = walletService.getWalletByUserId(userId);
-        return ResponseEntity.ok(walletMapper.toResponse(wallet));
-    }
-
-    @PostMapping("/user/{userId}/withdraw")
-    public ResponseEntity<WalletResponse> withdraw(@PathVariable UUID userId, @RequestBody WithdrawRequest request,
-                                                    @AuthenticationPrincipal AuthenticatedUser currentUser) {
-        currentUser.requireSelfOrAdmin(userId);
-        walletService.withdraw(userId, request.amount(), request.currency(), request.reference());
-        Wallet wallet = walletService.getWalletByUserId(userId);
-        return ResponseEntity.ok(walletMapper.toResponse(wallet));
-    }
-
+    /**
+     * Le dépôt/retrait "instantané" a été remplacé par le parcours complet Mobile
+     * Money/virement bancaire avec statut PENDING/COMPLETED/FAILED — voir WalletOperationController
+     * (POST /api/v1/wallet-operations/deposits|withdrawals).
+     */
     @GetMapping("/user/{userId}/transactions")
     public ResponseEntity<List<WalletTransactionResponse>> getTransactions(@PathVariable UUID userId,
                                                                             @AuthenticationPrincipal AuthenticatedUser currentUser) {

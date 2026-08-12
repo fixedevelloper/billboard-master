@@ -6,6 +6,7 @@ import com.cscreativ.billboard.owner.domain.OwnerStatus;
 import com.cscreativ.billboard.owner.domain.repository.BillboardOwnerRepository;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -48,5 +49,10 @@ public class OwnerFacadeImpl implements OwnerFacade {
     @Override
     public Optional<String> findContactEmailByOwnerId(UUID ownerId) {
         return ownerRepository.findById(ownerId).map(owner -> owner.getOwnerDetails().getContactEmail());
+    }
+
+    @Override
+    public Optional<BigDecimal> findRevenueShareRateByOwnerId(UUID ownerId) {
+        return ownerRepository.findById(ownerId).map(BillboardOwner::getRevenueShareRate);
     }
 }

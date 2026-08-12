@@ -1,6 +1,7 @@
 package com.cscreativ.billboard.wallet.infrastructure.persistence;
 
 import com.cscreativ.billboard.wallet.domain.WalletTransaction;
+import com.cscreativ.billboard.wallet.domain.WalletTransactionType;
 import com.cscreativ.billboard.wallet.domain.repository.WalletTransactionRepository;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +28,11 @@ public class WalletTransactionPersistenceAdapter implements WalletTransactionRep
     @Override
     public List<WalletTransaction> findByWalletId(UUID walletId) {
         return jpaRepository.findByWalletIdOrderByCreatedAtDesc(walletId).stream().map(this::toDomain).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean existsByWalletIdAndTypeAndReference(UUID walletId, WalletTransactionType type, String reference) {
+        return jpaRepository.existsByWalletIdAndTypeAndReference(walletId, type, reference);
     }
 
     private WalletTransactionEntity toEntity(WalletTransaction domain) {
