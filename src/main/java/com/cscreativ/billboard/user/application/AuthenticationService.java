@@ -4,23 +4,31 @@ import com.cscreativ.billboard.admin.AdminFacade;
 import com.cscreativ.billboard.advertiser.AdvertiserFacade;
 import com.cscreativ.billboard.mediabuyer.MediaBuyerFacade;
 import com.cscreativ.billboard.owner.OwnerFacade;
+import com.cscreativ.billboard.user.domain.Role;
 import com.cscreativ.billboard.user.domain.User;
 import com.cscreativ.billboard.user.domain.UserStatus;
 import com.cscreativ.billboard.user.domain.exception.InvalidPasswordException;
 import com.cscreativ.billboard.user.domain.exception.UserDisabledException;
 import com.cscreativ.billboard.user.domain.exception.UserNotFoundException;
 import com.cscreativ.billboard.user.domain.exception.UserNotVerifiedException;
+import com.cscreativ.billboard.user.domain.repository.RoleRepository;
 import com.cscreativ.billboard.user.domain.repository.UserRepository;
 import com.cscreativ.billboard.user.domain.valueobject.Email;
+import com.cscreativ.billboard.user.domain.valueobject.FullName;
+import com.cscreativ.billboard.user.domain.valueobject.Password;
 import com.cscreativ.billboard.user.events.UserLoggedInEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Chaque profil métier (annonceur, propriétaire, media buyer, admin) est rattaché à un
@@ -31,7 +39,11 @@ import java.util.Set;
 @Service
 public class AuthenticationService {
 
+    private static final String DEFAULT_ROLE_NAME = "USER";
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final ApplicationEventPublisher eventPublisher;
@@ -41,6 +53,7 @@ public class AuthenticationService {
     private final AdminFacade adminFacade;
 
     public AuthenticationService(UserRepository userRepository,
+                                  RoleRepository roleRepository,
                                   PasswordEncoder passwordEncoder,
                                   JwtService jwtService,
                                   ApplicationEventPublisher eventPublisher,
@@ -49,6 +62,7 @@ public class AuthenticationService {
                                   MediaBuyerFacade mediaBuyerFacade,
                                   AdminFacade adminFacade) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.eventPublisher = eventPublisher;
@@ -75,20 +89,64 @@ public class AuthenticationService {
 
         eventPublisher.publishEvent(new UserLoggedInEvent(user.getId(), LocalDateTime.now()));
 
+        return jwtService.generateAccessToken(user.getId(), user.getEmail().getValue(), buildProfileClaims(user.getId()));
+    }
+
+    /**
+     * Authentifie via Google/Facebook : rattache l'identité OAuth à un compte existant (retrouvé par
+     * providerId puis, à défaut, par email — Google/Facebook ne renvoient que des emails déjà vérifiés
+     * par le provider, donc pas de risque de prise de compte) ou en crée un nouveau, actif d'emblée.
+     */
+    @Transactional
+    public String loginOrRegisterViaOAuth(String oauthProvider, String oauthId, String emailStr, String firstName, String lastName) {
+        Email email = new Email(emailStr);
+        User user = userRepository.findByOauthProviderAndOauthId(oauthProvider, oauthId)
+                .orElseGet(() -> userRepository.findByEmail(email)
+                        .map(existing -> {
+                            existing.linkOAuthIdentity(oauthProvider, oauthId);
+                            return userRepository.save(existing);
+                        })
+                        .orElseGet(() -> registerOAuthUser(email, firstName, lastName, oauthProvider, oauthId)));
+
+        if (user.getStatus() == UserStatus.DISABLED || user.getStatus() == UserStatus.SUSPENDED) {
+            throw new UserDisabledException("Votre compte est désactivé. Contactez le support.");
+        }
+
+        eventPublisher.publishEvent(new UserLoggedInEvent(user.getId(), LocalDateTime.now()));
+
+        return jwtService.generateAccessToken(user.getId(), user.getEmail().getValue(), buildProfileClaims(user.getId()));
+    }
+
+    private User registerOAuthUser(Email email, String firstName, String lastName, String oauthProvider, String oauthId) {
+        Role defaultRole = roleRepository.findByName(DEFAULT_ROLE_NAME)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Rôle par défaut '" + DEFAULT_ROLE_NAME + "' introuvable en base"));
+
+        // Jamais communiqué ni utilisable pour se connecter par mot de passe : uniquement là pour
+        // satisfaire l'invariant "mot de passe non vide" du VO Password. L'utilisateur peut en
+        // définir un plus tard via le flux "mot de passe oublié" existant s'il le souhaite.
+        byte[] randomBytes = new byte[32];
+        RANDOM.nextBytes(randomBytes);
+        Password password = new Password(passwordEncoder.encode(Base64.getEncoder().encodeToString(randomBytes)));
+
+        User user = User.createFromOAuth(email, password, new FullName(firstName, lastName), oauthProvider, oauthId, Set.of(defaultRole));
+        return userRepository.save(user);
+    }
+
+    private Map<String, String> buildProfileClaims(UUID userId) {
         Map<String, String> profileClaims = new LinkedHashMap<>();
-        advertiserFacade.findAdvertiserIdByUserId(user.getId())
+        advertiserFacade.findAdvertiserIdByUserId(userId)
                 .ifPresent(id -> profileClaims.put("advertiserId", id.toString()));
-        ownerFacade.findOwnerIdByUserId(user.getId())
+        ownerFacade.findOwnerIdByUserId(userId)
                 .ifPresent(id -> profileClaims.put("ownerId", id.toString()));
-        mediaBuyerFacade.findBuyerIdByUserId(user.getId())
+        mediaBuyerFacade.findBuyerIdByUserId(userId)
                 .ifPresent(id -> profileClaims.put("mediaBuyerId", id.toString()));
-        adminFacade.findAdminIdByUserId(user.getId())
+        adminFacade.findAdminIdByUserId(userId)
                 .ifPresent(id -> profileClaims.put("adminId", id.toString()));
-        Set<String> adminRoles = adminFacade.findRoleNamesByUserId(user.getId());
+        Set<String> adminRoles = adminFacade.findRoleNamesByUserId(userId);
         if (!adminRoles.isEmpty()) {
             profileClaims.put("adminRoles", String.join(",", adminRoles));
         }
-
-        return jwtService.generateAccessToken(user.getId(), user.getEmail().getValue(), profileClaims);
+        return profileClaims;
     }
 }

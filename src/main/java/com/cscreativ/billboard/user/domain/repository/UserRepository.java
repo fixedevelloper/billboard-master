@@ -12,6 +12,7 @@ public interface UserRepository {
     Optional<User> findById(UUID id);
     Optional<User> findByEmail(Email email);
     Optional<User> findByVerificationToken(String verificationToken);
+    Optional<User> findByOauthProviderAndOauthId(String oauthProvider, String oauthId);
     boolean existsByEmail(Email email);
     List<User> findAll();
 }

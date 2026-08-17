@@ -29,8 +29,10 @@ public class User {
     private LocalDateTime updatedAt;
     private String verificationToken;
     private LocalDateTime verificationTokenExpiresAt;
+    private String oauthProvider;
+    private String oauthId;
 
-    public User(UUID id, Email email, Password password, FullName fullName, PhoneNumber phoneNumber, UserStatus status, Set<Role> roles, LocalDateTime createdAt, LocalDateTime updatedAt, String verificationToken, LocalDateTime verificationTokenExpiresAt) {
+    public User(UUID id, Email email, Password password, FullName fullName, PhoneNumber phoneNumber, UserStatus status, Set<Role> roles, LocalDateTime createdAt, LocalDateTime updatedAt, String verificationToken, LocalDateTime verificationTokenExpiresAt, String oauthProvider, String oauthId) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -42,13 +44,31 @@ public class User {
         this.updatedAt = updatedAt;
         this.verificationToken = verificationToken;
         this.verificationTokenExpiresAt = verificationTokenExpiresAt;
+        this.oauthProvider = oauthProvider;
+        this.oauthId = oauthId;
     }
 
     public static User create(Email email, Password password, FullName fullName, PhoneNumber phoneNumber, Set<Role> roles) {
         LocalDateTime now = LocalDateTime.now();
-        User user = new User(UUID.randomUUID(), email, password, fullName, phoneNumber, UserStatus.PENDING_VERIFICATION, roles, now, now, null, null);
+        User user = new User(UUID.randomUUID(), email, password, fullName, phoneNumber, UserStatus.PENDING_VERIFICATION, roles, now, now, null, null, null, null);
         user.issueVerificationToken();
         return user;
+    }
+
+    /**
+     * Google/Facebook ne renvoient que des emails déjà vérifiés côté provider : le compte est donc
+     * actif immédiatement, sans le code de vérification à 6 chiffres du flux email/mot de passe.
+     */
+    public static User createFromOAuth(Email email, Password password, FullName fullName, String oauthProvider, String oauthId, Set<Role> roles) {
+        LocalDateTime now = LocalDateTime.now();
+        return new User(UUID.randomUUID(), email, password, fullName, null, UserStatus.ACTIVE, roles, now, now, null, null, oauthProvider, oauthId);
+    }
+
+    /** Rattache une identité OAuth à un compte existant (créé au départ par email/mot de passe). */
+    public void linkOAuthIdentity(String oauthProvider, String oauthId) {
+        this.oauthProvider = oauthProvider;
+        this.oauthId = oauthId;
+        this.updatedAt = LocalDateTime.now();
     }
 
     /** Régénère un code de vérification à 6 chiffres, valable 24h (nouvelle inscription ou renvoi). */
@@ -111,4 +131,6 @@ public class User {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public String getVerificationToken() { return verificationToken; }
     public LocalDateTime getVerificationTokenExpiresAt() { return verificationTokenExpiresAt; }
+    public String getOauthProvider() { return oauthProvider; }
+    public String getOauthId() { return oauthId; }
 }

@@ -28,6 +28,9 @@ public class UserEntity {
     private String verificationToken;
     private LocalDateTime verificationTokenExpiresAt;
 
+    private String oauthProvider;
+    private String oauthId;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "user_roles",
@@ -57,6 +60,10 @@ public class UserEntity {
     public void setVerificationToken(String verificationToken) { this.verificationToken = verificationToken; }
     public LocalDateTime getVerificationTokenExpiresAt() { return verificationTokenExpiresAt; }
     public void setVerificationTokenExpiresAt(LocalDateTime verificationTokenExpiresAt) { this.verificationTokenExpiresAt = verificationTokenExpiresAt; }
+    public String getOauthProvider() { return oauthProvider; }
+    public void setOauthProvider(String oauthProvider) { this.oauthProvider = oauthProvider; }
+    public String getOauthId() { return oauthId; }
+    public void setOauthId(String oauthId) { this.oauthId = oauthId; }
     public Set<RoleEntity> getRoles() { return roles; }
     public void setRoles(Set<RoleEntity> roles) { this.roles = roles; }
     public LocalDateTime getCreatedAt() { return createdAt; }

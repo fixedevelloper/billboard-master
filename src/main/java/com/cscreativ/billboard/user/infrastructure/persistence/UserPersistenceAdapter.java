@@ -48,6 +48,11 @@ public class UserPersistenceAdapter implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByOauthProviderAndOauthId(String oauthProvider, String oauthId) {
+        return userJpaRepository.findByOauthProviderAndOauthId(oauthProvider, oauthId).map(this::toDomain);
+    }
+
+    @Override
     public boolean existsByEmail(Email email) {
         return userJpaRepository.existsByEmail(email.getValue());
     }
@@ -68,6 +73,8 @@ public class UserPersistenceAdapter implements UserRepository {
         entity.setStatus(domain.getStatus());
         entity.setVerificationToken(domain.getVerificationToken());
         entity.setVerificationTokenExpiresAt(domain.getVerificationTokenExpiresAt());
+        entity.setOauthProvider(domain.getOauthProvider());
+        entity.setOauthId(domain.getOauthId());
         entity.setRoles(domain.getRoles() != null ? domain.getRoles().stream().map(this::toRoleEntity).collect(Collectors.toSet()) : Set.of());
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setUpdatedAt(domain.getUpdatedAt());
@@ -93,7 +100,9 @@ public class UserPersistenceAdapter implements UserRepository {
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getVerificationToken(),
-                entity.getVerificationTokenExpiresAt()
+                entity.getVerificationTokenExpiresAt(),
+                entity.getOauthProvider(),
+                entity.getOauthId()
         );
     }
 
