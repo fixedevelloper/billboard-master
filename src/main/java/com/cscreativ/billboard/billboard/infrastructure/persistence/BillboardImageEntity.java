@@ -17,9 +17,8 @@ public class BillboardImageEntity {
     @Column(nullable = false)
     private UUID billboardId;
 
-    // URL présignée MinIO potentiellement longue (signature en query string).
-    @Column(nullable = false, length = 2000)
-    private String url;
+    @Column(nullable = false)
+    private UUID fileId;
 
     private LocalDateTime createdAt;
 
@@ -27,8 +26,8 @@ public class BillboardImageEntity {
     public void setId(UUID id) { this.id = id; }
     public UUID getBillboardId() { return billboardId; }
     public void setBillboardId(UUID billboardId) { this.billboardId = billboardId; }
-    public String getUrl() { return url; }
-    public void setUrl(String url) { this.url = url; }
+    public UUID getFileId() { return fileId; }
+    public void setFileId(UUID fileId) { this.fileId = fileId; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

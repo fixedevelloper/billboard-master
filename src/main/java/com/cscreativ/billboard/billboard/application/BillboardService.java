@@ -94,9 +94,9 @@ public class BillboardService {
     }
 
     @Transactional
-    public BillboardImage addImage(UUID billboardId, String url) {
+    public BillboardImage addImage(UUID billboardId, UUID fileId) {
         getBillboardById(billboardId);
-        BillboardImage image = BillboardImage.create(billboardId, url);
+        BillboardImage image = BillboardImage.create(billboardId, fileId);
         return billboardImageRepository.save(image);
     }
 

@@ -10,6 +10,7 @@ import com.cscreativ.billboard.billboard.application.BillboardService;
 import com.cscreativ.billboard.billboard.domain.Billboard;
 import com.cscreativ.billboard.billboard.domain.BillboardImage;
 import com.cscreativ.billboard.shared.AuthenticatedUser;
+import com.cscreativ.billboard.storage.application.StorageService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -24,10 +25,12 @@ public class BillboardController {
 
     private final BillboardService billboardService;
     private final BillboardMapper billboardMapper;
+    private final StorageService storageService;
 
-    public BillboardController(BillboardService billboardService, BillboardMapper billboardMapper) {
+    public BillboardController(BillboardService billboardService, BillboardMapper billboardMapper, StorageService storageService) {
         this.billboardService = billboardService;
         this.billboardMapper = billboardMapper;
+        this.storageService = storageService;
     }
 
     @PostMapping
@@ -104,14 +107,17 @@ public class BillboardController {
     public ResponseEntity<BillboardImageResponse> addImage(@PathVariable UUID id, @RequestBody AddBillboardImageRequest request,
                                                             @AuthenticationPrincipal AuthenticatedUser currentUser) {
         requireOwnerOfBillboardOrAdmin(id, currentUser);
-        BillboardImage image = billboardService.addImage(id, request.url());
-        return ResponseEntity.ok(billboardMapper.toImageResponse(image));
+        BillboardImage image = billboardService.addImage(id, request.fileId());
+        String url = storageService.getFilePresignedUrl(image.getFileId());
+        return ResponseEntity.ok(billboardMapper.toImageResponse(image, url));
     }
 
     @GetMapping("/{id}/images")
     public ResponseEntity<List<BillboardImageResponse>> getImages(@PathVariable UUID id) {
         List<BillboardImage> images = billboardService.getImages(id);
-        return ResponseEntity.ok(images.stream().map(billboardMapper::toImageResponse).collect(Collectors.toList()));
+        return ResponseEntity.ok(images.stream()
+                .map(image -> billboardMapper.toImageResponse(image, storageService.getFilePresignedUrl(image.getFileId())))
+                .collect(Collectors.toList()));
     }
 
     @DeleteMapping("/{billboardId}/images/{imageId}")

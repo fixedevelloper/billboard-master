@@ -28,11 +28,11 @@ public class BillboardMapper {
         );
     }
 
-    public BillboardImageResponse toImageResponse(BillboardImage image) {
+    public BillboardImageResponse toImageResponse(BillboardImage image, String url) {
         return new BillboardImageResponse(
                 image.getId(),
                 image.getBillboardId(),
-                image.getUrl(),
+                url,
                 image.getCreatedAt()
         );
     }

@@ -38,12 +38,12 @@ public class BillboardImagePersistenceAdapter implements BillboardImageRepositor
         BillboardImageEntity entity = new BillboardImageEntity();
         entity.setId(domain.getId());
         entity.setBillboardId(domain.getBillboardId());
-        entity.setUrl(domain.getUrl());
+        entity.setFileId(domain.getFileId());
         entity.setCreatedAt(domain.getCreatedAt());
         return entity;
     }
 
     private BillboardImage toDomain(BillboardImageEntity entity) {
-        return new BillboardImage(entity.getId(), entity.getBillboardId(), entity.getUrl(), entity.getCreatedAt());
+        return new BillboardImage(entity.getId(), entity.getBillboardId(), entity.getFileId(), entity.getCreatedAt());
     }
 }

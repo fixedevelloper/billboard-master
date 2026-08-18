@@ -24,7 +24,7 @@ export function BillboardsPreview() {
   }
 
   return (
-    <section className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-16 sm:px-6 lg:px-8">
+    <section id="billboards-preview" className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-16 sm:px-6 lg:px-8">
       <div className="flex flex-col items-center gap-3 text-center">
         <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
           <Sparkles className="h-4 w-4" />
