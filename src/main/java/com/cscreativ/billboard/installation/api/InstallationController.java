@@ -10,6 +10,7 @@ import com.cscreativ.billboard.installation.api.response.InstallationTaskRespons
 import com.cscreativ.billboard.installation.application.InstallationService;
 import com.cscreativ.billboard.installation.domain.InstallationTask;
 import com.cscreativ.billboard.shared.AuthenticatedUser;
+import com.cscreativ.billboard.storage.application.StorageService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -27,14 +28,17 @@ public class InstallationController {
     private final CampaignFacade campaignFacade;
     private final BookingFacade bookingFacade;
     private final BillboardFacade billboardFacade;
+    private final StorageService storageService;
 
     public InstallationController(InstallationService installationService, InstallationMapper installationMapper,
-                                   CampaignFacade campaignFacade, BookingFacade bookingFacade, BillboardFacade billboardFacade) {
+                                   CampaignFacade campaignFacade, BookingFacade bookingFacade, BillboardFacade billboardFacade,
+                                   StorageService storageService) {
         this.installationService = installationService;
         this.installationMapper = installationMapper;
         this.campaignFacade = campaignFacade;
         this.bookingFacade = bookingFacade;
         this.billboardFacade = billboardFacade;
+        this.storageService = storageService;
     }
 
     @PostMapping
@@ -49,7 +53,7 @@ public class InstallationController {
                 request.technicianId(),
                 request.scheduledDate()
         );
-        return ResponseEntity.ok(installationMapper.toResponse(task));
+        return ResponseEntity.ok(toResponse(task));
     }
 
     @PutMapping("/{id}/start")
@@ -63,7 +67,7 @@ public class InstallationController {
     public ResponseEntity<Void> completeTask(@PathVariable UUID id, @RequestBody CompleteTaskRequest request,
                                               @AuthenticationPrincipal AuthenticatedUser currentUser) {
         requirePartyToTask(installationService.getTaskById(id), currentUser);
-        installationService.completeTask(id, request.photoUrl(), request.notes());
+        installationService.completeTask(id, request.photoFileId(), request.notes());
         return ResponseEntity.noContent().build();
     }
 
@@ -71,7 +75,7 @@ public class InstallationController {
     public ResponseEntity<InstallationTaskResponse> getTaskById(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
         InstallationTask task = installationService.getTaskById(id);
         requirePartyToTask(task, currentUser);
-        return ResponseEntity.ok(installationMapper.toResponse(task));
+        return ResponseEntity.ok(toResponse(task));
     }
 
     @GetMapping("/campaign/{campaignId}")
@@ -80,7 +84,7 @@ public class InstallationController {
         UUID advertiserId = campaignFacade.findAdvertiserIdByCampaign(campaignId).orElse(null);
         currentUser.require(currentUser.isAdmin() || currentUser.isAdvertiser(advertiserId) || currentUser.isOwner(resolveOwnerIdForCampaign(campaignId)));
         List<InstallationTask> tasks = installationService.getTasksByCampaign(campaignId);
-        return ResponseEntity.ok(tasks.stream().map(installationMapper::toResponse).collect(Collectors.toList()));
+        return ResponseEntity.ok(tasks.stream().map(this::toResponse).collect(Collectors.toList()));
     }
 
     @GetMapping("/technician/{technicianId}")
@@ -88,7 +92,13 @@ public class InstallationController {
                                                                                 @AuthenticationPrincipal AuthenticatedUser currentUser) {
         currentUser.requireAdmin();
         List<InstallationTask> tasks = installationService.getTasksByTechnician(technicianId);
-        return ResponseEntity.ok(tasks.stream().map(installationMapper::toResponse).collect(Collectors.toList()));
+        return ResponseEntity.ok(tasks.stream().map(this::toResponse).collect(Collectors.toList()));
+    }
+
+    private InstallationTaskResponse toResponse(InstallationTask task) {
+        UUID photoFileId = task.getProof() != null ? task.getProof().getPhotoFileId() : null;
+        String proofPhotoUrl = photoFileId != null ? storageService.getFilePresignedUrl(photoFileId) : null;
+        return installationMapper.toResponse(task, proofPhotoUrl);
     }
 
     private void requirePartyToTask(InstallationTask task, AuthenticatedUser currentUser) {

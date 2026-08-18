@@ -22,8 +22,7 @@ public class CampaignEntity {
 
     private String description;
 
-    @Column(length = 2000)
-    private String mediaUrl;
+    private UUID mediaFileId;
     private String mediaFileType;
     private long mediaFileSizeInBytes;
 
@@ -46,8 +45,8 @@ public class CampaignEntity {
     public void setName(String name) { this.name = name; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
-    public String getMediaUrl() { return mediaUrl; }
-    public void setMediaUrl(String mediaUrl) { this.mediaUrl = mediaUrl; }
+    public UUID getMediaFileId() { return mediaFileId; }
+    public void setMediaFileId(UUID mediaFileId) { this.mediaFileId = mediaFileId; }
     public String getMediaFileType() { return mediaFileType; }
     public void setMediaFileType(String mediaFileType) { this.mediaFileType = mediaFileType; }
     public long getMediaFileSizeInBytes() { return mediaFileSizeInBytes; }

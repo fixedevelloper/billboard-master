@@ -1,6 +1,8 @@
 package com.cscreativ.billboard.installation.api.request;
 
+import java.util.UUID;
+
 public record CompleteTaskRequest(
-        String photoUrl,
+        UUID photoFileId,
         String notes
 ) {}

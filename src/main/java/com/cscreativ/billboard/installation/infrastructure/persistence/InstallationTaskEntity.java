@@ -27,8 +27,7 @@ public class InstallationTaskEntity {
     @Column(nullable = false)
     private TaskStatus status;
 
-    @Column(length = 2000)
-    private String proofPhotoUrl;
+    private UUID proofFileId;
     private String proofNotes;
     private LocalDateTime proofUploadedAt;
 
@@ -47,8 +46,8 @@ public class InstallationTaskEntity {
     public void setScheduledDate(LocalDateTime scheduledDate) { this.scheduledDate = scheduledDate; }
     public TaskStatus getStatus() { return status; }
     public void setStatus(TaskStatus status) { this.status = status; }
-    public String getProofPhotoUrl() { return proofPhotoUrl; }
-    public void setProofPhotoUrl(String proofPhotoUrl) { this.proofPhotoUrl = proofPhotoUrl; }
+    public UUID getProofFileId() { return proofFileId; }
+    public void setProofFileId(UUID proofFileId) { this.proofFileId = proofFileId; }
     public String getProofNotes() { return proofNotes; }
     public void setProofNotes(String proofNotes) { this.proofNotes = proofNotes; }
     public LocalDateTime getProofUploadedAt() { return proofUploadedAt; }

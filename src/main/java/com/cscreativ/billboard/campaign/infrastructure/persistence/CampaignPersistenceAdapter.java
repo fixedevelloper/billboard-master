@@ -61,7 +61,7 @@ public class CampaignPersistenceAdapter implements CampaignRepository {
         entity.setDescription(domain.getDescription());
         MediaAsset mediaAsset = domain.getMediaAsset();
         if (mediaAsset != null) {
-            entity.setMediaUrl(mediaAsset.getUrl());
+            entity.setMediaFileId(mediaAsset.getFileId());
             entity.setMediaFileType(mediaAsset.getFileType());
             entity.setMediaFileSizeInBytes(mediaAsset.getFileSizeInBytes());
         }
@@ -73,9 +73,9 @@ public class CampaignPersistenceAdapter implements CampaignRepository {
     }
 
     private Campaign toDomain(CampaignEntity entity) {
-        MediaAsset mediaAsset = entity.getMediaUrl() == null
+        MediaAsset mediaAsset = entity.getMediaFileId() == null
                 ? null
-                : new MediaAsset(entity.getMediaUrl(), entity.getMediaFileType(), entity.getMediaFileSizeInBytes());
+                : new MediaAsset(entity.getMediaFileId(), entity.getMediaFileType(), entity.getMediaFileSizeInBytes());
         return new Campaign(
                 entity.getId(),
                 entity.getBookingId(),

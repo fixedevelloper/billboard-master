@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public record SubmitProofRequest(
         UUID campaignId,
-        String fileUrl,
+        UUID fileId,
         int width,
         int height
 ) {}

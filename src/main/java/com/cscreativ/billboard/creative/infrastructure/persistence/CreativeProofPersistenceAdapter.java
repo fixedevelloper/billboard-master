@@ -48,7 +48,7 @@ public class CreativeProofPersistenceAdapter implements CreativeProofRepository 
         entity.setId(domain.getId());
         entity.setCampaignId(domain.getCampaignId());
         entity.setVersion(domain.getVersion());
-        entity.setFileUrl(domain.getFileUrl());
+        entity.setFileId(domain.getFileId());
         entity.setWidthInPixels(domain.getDimensions().getWidthInPixels());
         entity.setHeightInPixels(domain.getDimensions().getHeightInPixels());
         entity.setStatus(domain.getStatus());
@@ -63,7 +63,7 @@ public class CreativeProofPersistenceAdapter implements CreativeProofRepository 
                 entity.getId(),
                 entity.getCampaignId(),
                 entity.getVersion(),
-                entity.getFileUrl(),
+                entity.getFileId(),
                 new ProofDimensions(entity.getWidthInPixels(), entity.getHeightInPixels()),
                 entity.getStatus(),
                 entity.getFeedback(),

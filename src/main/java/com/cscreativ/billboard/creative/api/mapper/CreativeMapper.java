@@ -7,12 +7,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class CreativeMapper {
 
-    public CreativeProofResponse toResponse(CreativeProof proof) {
+    public CreativeProofResponse toResponse(CreativeProof proof, String fileUrl) {
         return new CreativeProofResponse(
                 proof.getId(),
                 proof.getCampaignId(),
                 proof.getVersion(),
-                proof.getFileUrl(),
+                fileUrl,
                 proof.getDimensions().getWidthInPixels(),
                 proof.getDimensions().getHeightInPixels(),
                 proof.getStatus().name(),

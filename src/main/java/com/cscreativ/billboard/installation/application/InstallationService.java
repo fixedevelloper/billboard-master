@@ -45,12 +45,12 @@ public class InstallationService {
     }
 
     @Transactional
-    public void completeTask(UUID taskId, String photoUrl, String notes) {
+    public void completeTask(UUID taskId, UUID photoFileId, String notes) {
         InstallationTask task = getTaskById(taskId);
-        task.completeInstallation(photoUrl, notes);
+        task.completeInstallation(photoFileId, notes);
         InstallationTask saved = taskRepository.save(task);
 
-        eventPublisher.publishEvent(new InstallationCompletedEvent(saved.getId(), saved.getCampaignId(), saved.getBillboardId(), photoUrl, LocalDateTime.now()));
+        eventPublisher.publishEvent(new InstallationCompletedEvent(saved.getId(), saved.getCampaignId(), saved.getBillboardId(), photoFileId, LocalDateTime.now()));
 
         // La pose physique du visuel est le signal métier qui fait passer la campagne à ACTIVE.
         campaignFacade.activateCampaign(saved.getCampaignId());

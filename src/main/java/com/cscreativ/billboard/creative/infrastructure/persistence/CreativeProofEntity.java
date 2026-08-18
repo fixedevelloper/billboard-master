@@ -17,8 +17,8 @@ public class CreativeProofEntity {
     @Column(nullable = false)
     private int version;
 
-    @Column(nullable = false, length = 2000)
-    private String fileUrl;
+    @Column(nullable = false)
+    private UUID fileId;
 
     private int widthInPixels;
     private int heightInPixels;
@@ -38,8 +38,8 @@ public class CreativeProofEntity {
     public void setCampaignId(UUID campaignId) { this.campaignId = campaignId; }
     public int getVersion() { return version; }
     public void setVersion(int version) { this.version = version; }
-    public String getFileUrl() { return fileUrl; }
-    public void setFileUrl(String fileUrl) { this.fileUrl = fileUrl; }
+    public UUID getFileId() { return fileId; }
+    public void setFileId(UUID fileId) { this.fileId = fileId; }
     public int getWidthInPixels() { return widthInPixels; }
     public void setWidthInPixels(int widthInPixels) { this.widthInPixels = widthInPixels; }
     public int getHeightInPixels() { return heightInPixels; }

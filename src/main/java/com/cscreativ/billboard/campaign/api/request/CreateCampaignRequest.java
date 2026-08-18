@@ -7,7 +7,7 @@ public record CreateCampaignRequest(
         UUID advertiserId,
         String name,
         String description,
-        String mediaUrl,
+        UUID mediaFileId,
         String fileType,
         Long fileSize
 ) {}

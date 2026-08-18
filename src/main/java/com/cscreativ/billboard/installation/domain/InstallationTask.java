@@ -41,18 +41,18 @@ public class InstallationTask {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void completeInstallation(String photoUrl, String notes) {
+    public void completeInstallation(UUID photoFileId, String notes) {
         if (this.status != TaskStatus.IN_PROGRESS && this.status != TaskStatus.SCHEDULED) {
             throw new IllegalStateException("La tâche ne peut pas être terminée dans son état actuel");
         }
-        this.proof = new InstallationProof(photoUrl, notes, LocalDateTime.now());
+        this.proof = new InstallationProof(photoFileId, notes, LocalDateTime.now());
         this.status = TaskStatus.COMPLETED;
         this.updatedAt = LocalDateTime.now();
     }
 
     public void markAsFailed(String notes) {
         this.status = TaskStatus.FAILED;
-        this.proof = new InstallationProof("N/A", notes, LocalDateTime.now());
+        this.proof = new InstallationProof(null, notes, LocalDateTime.now());
         this.updatedAt = LocalDateTime.now();
     }
 

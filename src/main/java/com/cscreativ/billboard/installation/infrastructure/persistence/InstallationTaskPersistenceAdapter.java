@@ -55,7 +55,7 @@ public class InstallationTaskPersistenceAdapter implements InstallationTaskRepos
         entity.setStatus(domain.getStatus());
 
         if (domain.getProof() != null) {
-            entity.setProofPhotoUrl(domain.getProof().getPhotoUrl());
+            entity.setProofFileId(domain.getProof().getPhotoFileId());
             entity.setProofNotes(domain.getProof().getNotes());
             entity.setProofUploadedAt(domain.getProof().getUploadedAt());
         }
@@ -66,8 +66,8 @@ public class InstallationTaskPersistenceAdapter implements InstallationTaskRepos
     }
 
     private InstallationTask toDomain(InstallationTaskEntity entity) {
-        InstallationProof proof = entity.getProofPhotoUrl() != null ?
-                new InstallationProof(entity.getProofPhotoUrl(), entity.getProofNotes(), entity.getProofUploadedAt()) : null;
+        InstallationProof proof = entity.getProofUploadedAt() != null ?
+                new InstallationProof(entity.getProofFileId(), entity.getProofNotes(), entity.getProofUploadedAt()) : null;
 
         return new InstallationTask(
                 entity.getId(),

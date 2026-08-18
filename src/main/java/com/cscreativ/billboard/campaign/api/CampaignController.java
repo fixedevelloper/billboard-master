@@ -9,6 +9,7 @@ import com.cscreativ.billboard.campaign.api.response.CampaignResponse;
 import com.cscreativ.billboard.campaign.application.CampaignService;
 import com.cscreativ.billboard.campaign.domain.Campaign;
 import com.cscreativ.billboard.shared.AuthenticatedUser;
+import com.cscreativ.billboard.storage.application.StorageService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -25,13 +26,15 @@ public class CampaignController {
     private final CampaignMapper campaignMapper;
     private final BookingFacade bookingFacade;
     private final BillboardFacade billboardFacade;
+    private final StorageService storageService;
 
     public CampaignController(CampaignService campaignService, CampaignMapper campaignMapper,
-                               BookingFacade bookingFacade, BillboardFacade billboardFacade) {
+                               BookingFacade bookingFacade, BillboardFacade billboardFacade, StorageService storageService) {
         this.campaignService = campaignService;
         this.campaignMapper = campaignMapper;
         this.bookingFacade = bookingFacade;
         this.billboardFacade = billboardFacade;
+        this.storageService = storageService;
     }
 
     @PostMapping
@@ -43,11 +46,11 @@ public class CampaignController {
                 request.advertiserId(),
                 request.name(),
                 request.description(),
-                request.mediaUrl(),
+                request.mediaFileId(),
                 request.fileType(),
                 request.fileSize()
         );
-        return ResponseEntity.ok(campaignMapper.toResponse(campaign));
+        return ResponseEntity.ok(toResponse(campaign));
     }
 
     @PostMapping("/{id}/submit")
@@ -78,7 +81,7 @@ public class CampaignController {
                                                              @AuthenticationPrincipal AuthenticatedUser currentUser) {
         Campaign campaign = campaignService.getCampaignById(id);
         requirePartyToCampaignOrAdmin(campaign, currentUser);
-        return ResponseEntity.ok(campaignMapper.toResponse(campaign));
+        return ResponseEntity.ok(toResponse(campaign));
     }
 
     @GetMapping("/advertiser/{advertiserId}")
@@ -86,7 +89,7 @@ public class CampaignController {
                                                                             @AuthenticationPrincipal AuthenticatedUser currentUser) {
         currentUser.require(currentUser.isAdmin() || currentUser.isAdvertiser(advertiserId));
         List<Campaign> campaigns = campaignService.getCampaignsByAdvertiser(advertiserId);
-        return ResponseEntity.ok(campaigns.stream().map(campaignMapper::toResponse).collect(Collectors.toList()));
+        return ResponseEntity.ok(campaigns.stream().map(this::toResponse).collect(Collectors.toList()));
     }
 
     @GetMapping("/booking/{bookingId}")
@@ -97,14 +100,20 @@ public class CampaignController {
         UUID ownerId = billboardId == null ? null : billboardFacade.findOwnerIdByBillboard(billboardId).orElse(null);
         currentUser.require(currentUser.isAdmin() || currentUser.isAdvertiser(advertiserId) || currentUser.isOwner(ownerId));
         List<Campaign> campaigns = campaignService.getCampaignsByBooking(bookingId);
-        return ResponseEntity.ok(campaigns.stream().map(campaignMapper::toResponse).collect(Collectors.toList()));
+        return ResponseEntity.ok(campaigns.stream().map(this::toResponse).collect(Collectors.toList()));
     }
 
     @GetMapping
     public ResponseEntity<List<CampaignResponse>> getAllCampaigns(@AuthenticationPrincipal AuthenticatedUser currentUser) {
         currentUser.requireAdmin();
         List<Campaign> campaigns = campaignService.getAllCampaigns();
-        return ResponseEntity.ok(campaigns.stream().map(campaignMapper::toResponse).collect(Collectors.toList()));
+        return ResponseEntity.ok(campaigns.stream().map(this::toResponse).collect(Collectors.toList()));
+    }
+
+    private CampaignResponse toResponse(Campaign campaign) {
+        var mediaAsset = campaign.getMediaAsset();
+        String mediaUrl = mediaAsset == null ? null : storageService.getFilePresignedUrl(mediaAsset.getFileId());
+        return campaignMapper.toResponse(campaign, mediaUrl);
     }
 
     private void requirePartyToCampaignOrAdmin(Campaign campaign, AuthenticatedUser currentUser) {

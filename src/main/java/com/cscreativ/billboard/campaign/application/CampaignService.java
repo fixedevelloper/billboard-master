@@ -52,13 +52,13 @@ public class CampaignService {
      */
     @Transactional
     public Campaign createCampaign(UUID bookingId, UUID advertiserId, String name, String description,
-                                   String mediaUrl, String fileType, Long fileSize) {
+                                   UUID mediaFileId, String fileType, Long fileSize) {
         if (!paymentFacade.hasCompletedPaymentForReference(bookingId)) {
             throw new IllegalStateException("La campagne ne peut être créée tant que le paiement de la réservation n'est pas finalisé");
         }
-        MediaAsset mediaAsset = (mediaUrl == null || fileType == null || fileSize == null)
+        MediaAsset mediaAsset = (mediaFileId == null || fileType == null || fileSize == null)
                 ? null
-                : new MediaAsset(mediaUrl, fileType, fileSize);
+                : new MediaAsset(mediaFileId, fileType, fileSize);
         Campaign campaign = Campaign.create(bookingId, advertiserId, name, description, mediaAsset);
         return campaignRepository.save(campaign);
     }

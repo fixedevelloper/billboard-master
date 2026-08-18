@@ -27,13 +27,13 @@ public class CreativeService {
     }
 
     @Transactional
-    public CreativeProof submitProof(UUID campaignId, String fileUrl, int width, int height) {
+    public CreativeProof submitProof(UUID campaignId, UUID fileId, int width, int height) {
         int nextVersion = proofRepository.findLatestByCampaignId(campaignId)
                 .map(p -> p.getVersion() + 1)
                 .orElse(1);
 
         ProofDimensions dimensions = new ProofDimensions(width, height);
-        CreativeProof proof = CreativeProof.create(campaignId, nextVersion, fileUrl, dimensions);
+        CreativeProof proof = CreativeProof.create(campaignId, nextVersion, fileId, dimensions);
         CreativeProof saved = proofRepository.save(proof);
 
         eventPublisher.publishEvent(new CreativeProofSubmittedEvent(saved.getId(), saved.getCampaignId(), saved.getVersion(), LocalDateTime.now()));

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class InstallationMapper {
 
-    public InstallationTaskResponse toResponse(InstallationTask task) {
+    public InstallationTaskResponse toResponse(InstallationTask task, String proofPhotoUrl) {
         return new InstallationTaskResponse(
                 task.getId(),
                 task.getCampaignId(),
@@ -15,7 +15,7 @@ public class InstallationMapper {
                 task.getTechnicianId(),
                 task.getScheduledDate(),
                 task.getStatus().name(),
-                task.getProof() != null ? task.getProof().getPhotoUrl() : null,
+                proofPhotoUrl,
                 task.getProof() != null ? task.getProof().getNotes() : null,
                 task.getCreatedAt()
         );

@@ -10,6 +10,7 @@ import com.cscreativ.billboard.creative.api.response.CreativeProofResponse;
 import com.cscreativ.billboard.creative.application.CreativeService;
 import com.cscreativ.billboard.creative.domain.CreativeProof;
 import com.cscreativ.billboard.shared.AuthenticatedUser;
+import com.cscreativ.billboard.storage.application.StorageService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -27,14 +28,17 @@ public class CreativeController {
     private final CampaignFacade campaignFacade;
     private final BookingFacade bookingFacade;
     private final BillboardFacade billboardFacade;
+    private final StorageService storageService;
 
     public CreativeController(CreativeService creativeService, CreativeMapper creativeMapper,
-                               CampaignFacade campaignFacade, BookingFacade bookingFacade, BillboardFacade billboardFacade) {
+                               CampaignFacade campaignFacade, BookingFacade bookingFacade, BillboardFacade billboardFacade,
+                               StorageService storageService) {
         this.creativeService = creativeService;
         this.creativeMapper = creativeMapper;
         this.campaignFacade = campaignFacade;
         this.bookingFacade = bookingFacade;
         this.billboardFacade = billboardFacade;
+        this.storageService = storageService;
     }
 
     @PostMapping("/proofs")
@@ -44,11 +48,11 @@ public class CreativeController {
         currentUser.require(currentUser.isAdmin() || currentUser.isAdvertiser(advertiserId));
         CreativeProof proof = creativeService.submitProof(
                 request.campaignId(),
-                request.fileUrl(),
+                request.fileId(),
                 request.width(),
                 request.height()
         );
-        return ResponseEntity.ok(creativeMapper.toResponse(proof));
+        return ResponseEntity.ok(toResponse(proof));
     }
 
     @PutMapping("/proofs/{id}/approve")
@@ -70,7 +74,7 @@ public class CreativeController {
     public ResponseEntity<CreativeProofResponse> getProofById(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
         CreativeProof proof = creativeService.getProofById(id);
         requirePartyToCampaignOrAdmin(proof.getCampaignId(), currentUser);
-        return ResponseEntity.ok(creativeMapper.toResponse(proof));
+        return ResponseEntity.ok(toResponse(proof));
     }
 
     @GetMapping("/campaign/{campaignId}/proofs")
@@ -78,7 +82,11 @@ public class CreativeController {
                                                                             @AuthenticationPrincipal AuthenticatedUser currentUser) {
         requirePartyToCampaignOrAdmin(campaignId, currentUser);
         List<CreativeProof> proofs = creativeService.getProofsByCampaign(campaignId);
-        return ResponseEntity.ok(proofs.stream().map(creativeMapper::toResponse).collect(Collectors.toList()));
+        return ResponseEntity.ok(proofs.stream().map(this::toResponse).collect(Collectors.toList()));
+    }
+
+    private CreativeProofResponse toResponse(CreativeProof proof) {
+        return creativeMapper.toResponse(proof, storageService.getFilePresignedUrl(proof.getFileId()));
     }
 
     private void requirePartyToCampaignOrAdmin(UUID campaignId, AuthenticatedUser currentUser) {

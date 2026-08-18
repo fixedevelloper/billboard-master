@@ -9,18 +9,18 @@ public class CreativeProof {
     private UUID id;
     private UUID campaignId;
     private int version;
-    private String fileUrl;
+    private UUID fileId;
     private ProofDimensions dimensions;
     private ProofStatus status;
     private String feedback;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public CreativeProof(UUID id, UUID campaignId, int version, String fileUrl, ProofDimensions dimensions, ProofStatus status, String feedback, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public CreativeProof(UUID id, UUID campaignId, int version, UUID fileId, ProofDimensions dimensions, ProofStatus status, String feedback, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.campaignId = campaignId;
         this.version = version;
-        this.fileUrl = fileUrl;
+        this.fileId = fileId;
         this.dimensions = dimensions;
         this.status = status;
         this.feedback = feedback;
@@ -28,9 +28,9 @@ public class CreativeProof {
         this.updatedAt = updatedAt;
     }
 
-    public static CreativeProof create(UUID campaignId, int version, String fileUrl, ProofDimensions dimensions) {
+    public static CreativeProof create(UUID campaignId, int version, UUID fileId, ProofDimensions dimensions) {
         LocalDateTime now = LocalDateTime.now();
-        return new CreativeProof(UUID.randomUUID(), campaignId, version, fileUrl, dimensions, ProofStatus.PENDING_REVIEW, null, now, now);
+        return new CreativeProof(UUID.randomUUID(), campaignId, version, fileId, dimensions, ProofStatus.PENDING_REVIEW, null, now, now);
     }
 
     public void approve() {
@@ -68,7 +68,7 @@ public class CreativeProof {
     public UUID getId() { return id; }
     public UUID getCampaignId() { return campaignId; }
     public int getVersion() { return version; }
-    public String getFileUrl() { return fileUrl; }
+    public UUID getFileId() { return fileId; }
     public ProofDimensions getDimensions() { return dimensions; }
     public ProofStatus getStatus() { return status; }
     public String getFeedback() { return feedback; }
