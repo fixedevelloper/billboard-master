@@ -7,6 +7,14 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class BillboardOwner {
+
+    /**
+     * Taux de reversement à la plateforme appliqué par défaut à tout nouveau propriétaire :
+     * défini par la plateforme, pas par le propriétaire (voir BecomeOwnerPage côté frontend, qui
+     * n'expose plus ce champ en saisie). Un admin peut l'ajuster ensuite via updateRevenueShareRate.
+     */
+    public static final BigDecimal DEFAULT_REVENUE_SHARE_RATE = new BigDecimal("0.10");
+
     private UUID id;
     private UUID userId;
     private OwnerDetails ownerDetails;
@@ -25,11 +33,9 @@ public class BillboardOwner {
         this.updatedAt = updatedAt;
     }
 
-    public static BillboardOwner create(UUID userId, OwnerDetails ownerDetails, BigDecimal revenueShareRate) {
+    public static BillboardOwner create(UUID userId, OwnerDetails ownerDetails) {
         LocalDateTime now = LocalDateTime.now();
-        BigDecimal defaultRate = revenueShareRate != null ? revenueShareRate : BigDecimal.ZERO;
-        validateRate(defaultRate);
-        return new BillboardOwner(UUID.randomUUID(), userId, ownerDetails, defaultRate, OwnerStatus.PENDING_APPROVAL, now, now);
+        return new BillboardOwner(UUID.randomUUID(), userId, ownerDetails, DEFAULT_REVENUE_SHARE_RATE, OwnerStatus.PENDING_APPROVAL, now, now);
     }
 
     public void activate() {

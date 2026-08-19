@@ -44,8 +44,7 @@ public class OwnerController {
                 request.companyName(),
                 request.registrationNumber(),
                 request.contactEmail(),
-                request.phoneNumber(),
-                request.revenueShareRate()
+                request.phoneNumber()
         );
         return ResponseEntity.ok(ownerMapper.toResponse(owner));
     }

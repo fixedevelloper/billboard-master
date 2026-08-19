@@ -49,6 +49,8 @@ public class BillboardController {
                 request.height(),
                 request.dailyRate(),
                 request.currency(),
+                request.audience(),
+                request.dailyTraffic(),
                 request.ownerId()
         );
         return ResponseEntity.ok(billboardMapper.toResponse(billboard));
@@ -91,7 +93,9 @@ public class BillboardController {
                 request.width(),
                 request.height(),
                 request.dailyRate(),
-                request.currency()
+                request.currency(),
+                request.audience(),
+                request.dailyTraffic()
         );
         return ResponseEntity.ok(billboardMapper.toResponse(billboard));
     }

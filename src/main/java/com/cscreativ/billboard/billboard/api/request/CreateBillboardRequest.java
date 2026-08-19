@@ -16,5 +16,7 @@ public record CreateBillboardRequest(
         double height,
         BigDecimal dailyRate,
         String currency,
+        String audience,
+        Integer dailyTraffic,
         UUID ownerId
 ) {}

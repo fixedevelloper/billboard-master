@@ -27,9 +27,9 @@ public class OwnerService {
     }
 
     @Transactional
-    public BillboardOwner registerOwner(UUID userId, String companyName, String registrationNumber, String email, String phone, BigDecimal revenueShareRate) {
+    public BillboardOwner registerOwner(UUID userId, String companyName, String registrationNumber, String email, String phone) {
         OwnerDetails details = new OwnerDetails(companyName, registrationNumber, email, phone);
-        BillboardOwner owner = BillboardOwner.create(userId, details, revenueShareRate);
+        BillboardOwner owner = BillboardOwner.create(userId, details);
         BillboardOwner saved = ownerRepository.save(owner);
 
         eventPublisher.publishEvent(new OwnerRegisteredEvent(saved.getId(), saved.getUserId(), saved.getOwnerDetails().getCompanyName(), LocalDateTime.now()));

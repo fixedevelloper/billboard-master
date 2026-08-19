@@ -14,5 +14,7 @@ public record UpdateBillboardRequest(
         double width,
         double height,
         BigDecimal dailyRate,
-        String currency
+        String currency,
+        String audience,
+        Integer dailyTraffic
 ) {}

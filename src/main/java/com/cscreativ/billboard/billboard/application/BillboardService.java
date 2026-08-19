@@ -41,13 +41,14 @@ public class BillboardService {
     @Transactional
     public Billboard createBillboard(String title, String description, BillboardType type,
                                       String address, String city, double lat, double lng,
-                                      double width, double height, BigDecimal dailyRate, String currency, UUID ownerId) {
+                                      double width, double height, BigDecimal dailyRate, String currency,
+                                      String audience, Integer dailyTraffic, UUID ownerId) {
         requireKnownCity(city);
         Location location = new Location(address, city, lat, lng);
         Dimensions dimensions = new Dimensions(width, height);
         Pricing pricing = new Pricing(dailyRate, currency);
 
-        Billboard billboard = Billboard.create(title, description, type, location, dimensions, pricing, ownerId);
+        Billboard billboard = Billboard.create(title, description, type, location, dimensions, pricing, audience, dailyTraffic, ownerId);
         Billboard saved = billboardRepository.save(billboard);
 
         eventPublisher.publishEvent(new BillboardCreatedEvent(saved.getId(), saved.getOwnerId(), LocalDateTime.now()));
@@ -74,7 +75,8 @@ public class BillboardService {
     @Transactional
     public Billboard updateBillboard(UUID id, String title, String description, BillboardType type,
                                       String address, String city, double lat, double lng,
-                                      double width, double height, BigDecimal dailyRate, String currency) {
+                                      double width, double height, BigDecimal dailyRate, String currency,
+                                      String audience, Integer dailyTraffic) {
         requireKnownCity(city);
         Billboard billboard = getBillboardById(id);
 
@@ -82,7 +84,7 @@ public class BillboardService {
         Dimensions dimensions = new Dimensions(width, height);
         Pricing pricing = new Pricing(dailyRate, currency);
 
-        billboard.updateDetails(title, description, type, location, dimensions, pricing);
+        billboard.updateDetails(title, description, type, location, dimensions, pricing, audience, dailyTraffic);
         return billboardRepository.save(billboard);
     }
 

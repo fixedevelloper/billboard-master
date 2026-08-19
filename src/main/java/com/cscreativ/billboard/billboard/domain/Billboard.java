@@ -16,11 +16,13 @@ public class Billboard {
     private Location location;
     private Dimensions dimensions;
     private Pricing pricing;
+    private String audience;
+    private Integer dailyTraffic;
     private UUID ownerId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public Billboard(UUID id, String title, String description, BillboardType type, BillboardStatus status, Location location, Dimensions dimensions, Pricing pricing, UUID ownerId, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Billboard(UUID id, String title, String description, BillboardType type, BillboardStatus status, Location location, Dimensions dimensions, Pricing pricing, String audience, Integer dailyTraffic, UUID ownerId, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -29,14 +31,16 @@ public class Billboard {
         this.location = location;
         this.dimensions = dimensions;
         this.pricing = pricing;
+        this.audience = audience;
+        this.dailyTraffic = dailyTraffic;
         this.ownerId = ownerId;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    public static Billboard create(String title, String description, BillboardType type, Location location, Dimensions dimensions, Pricing pricing, UUID ownerId) {
+    public static Billboard create(String title, String description, BillboardType type, Location location, Dimensions dimensions, Pricing pricing, String audience, Integer dailyTraffic, UUID ownerId) {
         LocalDateTime now = LocalDateTime.now();
-        return new Billboard(UUID.randomUUID(), title, description, type, BillboardStatus.AVAILABLE, location, dimensions, pricing, ownerId, now, now);
+        return new Billboard(UUID.randomUUID(), title, description, type, BillboardStatus.AVAILABLE, location, dimensions, pricing, audience, dailyTraffic, ownerId, now, now);
     }
 
     public void markAsBooked() {
@@ -55,13 +59,16 @@ public class Billboard {
     }
 
     public void updateDetails(String title, String description, BillboardType type,
-                               Location location, Dimensions dimensions, Pricing pricing) {
+                               Location location, Dimensions dimensions, Pricing pricing,
+                               String audience, Integer dailyTraffic) {
         this.title = title;
         this.description = description;
         this.type = type;
         this.location = location;
         this.dimensions = dimensions;
         this.pricing = pricing;
+        this.audience = audience;
+        this.dailyTraffic = dailyTraffic;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -73,6 +80,8 @@ public class Billboard {
     public Location getLocation() { return location; }
     public Dimensions getDimensions() { return dimensions; }
     public Pricing getPricing() { return pricing; }
+    public String getAudience() { return audience; }
+    public Integer getDailyTraffic() { return dailyTraffic; }
     public UUID getOwnerId() { return ownerId; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

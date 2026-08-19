@@ -74,6 +74,8 @@ public class BillboardPersistenceAdapter implements BillboardRepository {
         entity.setHeight(domain.getDimensions().getHeight());
         entity.setDailyRate(domain.getPricing().getDailyRate());
         entity.setCurrency(domain.getPricing().getCurrency());
+        entity.setAudience(domain.getAudience());
+        entity.setDailyTraffic(domain.getDailyTraffic());
         entity.setOwnerId(domain.getOwnerId());
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setUpdatedAt(domain.getUpdatedAt());
@@ -90,6 +92,8 @@ public class BillboardPersistenceAdapter implements BillboardRepository {
                 new Location(entity.getAddress(), entity.getCity(), entity.getLatitude(), entity.getLongitude()),
                 new Dimensions(entity.getWidth(), entity.getHeight()),
                 new Pricing(entity.getDailyRate(), entity.getCurrency()),
+                entity.getAudience(),
+                entity.getDailyTraffic(),
                 entity.getOwnerId(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()

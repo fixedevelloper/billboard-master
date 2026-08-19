@@ -35,6 +35,11 @@ public class BillboardEntity {
     private BigDecimal dailyRate;
     private String currency;
 
+    private String audience;
+
+    @Column(name = "daily_traffic")
+    private Integer dailyTraffic;
+
     private UUID ownerId;
 
     private LocalDateTime createdAt;
@@ -66,6 +71,10 @@ public class BillboardEntity {
     public void setDailyRate(BigDecimal dailyRate) { this.dailyRate = dailyRate; }
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }
+    public String getAudience() { return audience; }
+    public void setAudience(String audience) { this.audience = audience; }
+    public Integer getDailyTraffic() { return dailyTraffic; }
+    public void setDailyTraffic(Integer dailyTraffic) { this.dailyTraffic = dailyTraffic; }
     public UUID getOwnerId() { return ownerId; }
     public void setOwnerId(UUID ownerId) { this.ownerId = ownerId; }
     public LocalDateTime getCreatedAt() { return createdAt; }

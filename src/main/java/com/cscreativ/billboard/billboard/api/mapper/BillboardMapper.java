@@ -24,6 +24,8 @@ public class BillboardMapper {
                 billboard.getDimensions().getHeight(),
                 billboard.getPricing().getDailyRate(),
                 billboard.getPricing().getCurrency(),
+                billboard.getAudience(),
+                billboard.getDailyTraffic(),
                 billboard.getOwnerId()
         );
     }
